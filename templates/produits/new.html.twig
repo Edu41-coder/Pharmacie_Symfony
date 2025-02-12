@@ -4,6 +4,9 @@
 
 {% block body %}
 <div class="container">
+    {% include 'partials/_breadcrumb_produit.html.twig' with {
+        'current_route': 'produits_new'
+    } %}
     <div class="row justify-content-center">
         <div class="col-md-8">
             <div class="card shadow-sm">

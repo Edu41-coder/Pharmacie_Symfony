@@ -1,0 +1,30 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route != 'admin_users_index' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('admin_users_index') }}" class="text-decoration-none">
+                    <i class="fas fa-users"></i> Utilisateurs
+                </a>
+            </li>
+        {% else %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-users"></i> Utilisateurs
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'admin_users_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-plus"></i> Nouvel utilisateur
+            </li>
+        {% elseif current_route == 'admin_users_edit' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-edit"></i> Modifier {{ user.prenom }} {{ user.nom }}
+            </li>
+        {% endif %}
+    </ol>
+</nav> 

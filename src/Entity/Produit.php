@@ -12,10 +12,10 @@ class Produit
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
-    #[ORM\Column(name: 'produit_id')]
+    #[ORM\Column(name: 'produit_id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(type: 'string', length: 100)]
     #[Assert\NotBlank(message: 'Le nom est requis')]
     #[Assert\Length(max: 100)]
     private ?string $nom = null;
@@ -26,24 +26,24 @@ class Produit
     #[ORM\Column(name: 'prix_vente_ht', type: 'decimal', precision: 10, scale: 2)]
     #[Assert\NotBlank]
     #[Assert\Positive]
-    private string $prixVenteHt;
+    private ?string $prixVenteHt = null;
 
-    #[ORM\Column(type: 'string', length: 3)]
+    #[ORM\Column(type: 'string', length: 3, options: ['default' => 'non'])]
     #[Assert\Choice(choices: ['oui', 'non'])]
-    private string $prescription = 'non';
+    private ?string $prescription = 'non';
 
-    #[ORM\Column(name: 'taux_remboursement', nullable: true)]
+    #[ORM\Column(name: 'taux_remboursement', type: 'integer', nullable: true)]
     #[Assert\Range(min: 0, max: 100)]
     private ?int $tauxRemboursement = null;
 
-    #[ORM\Column(nullable: true)]
+    #[ORM\Column(type: 'integer', nullable: true)]
     private ?int $alerte = null;
 
-    #[ORM\Column(name: 'declencher_alerte', type: 'string', length: 3)]
+    #[ORM\Column(name: 'declencher_alerte', type: 'string', length: 3, options: ['default' => 'non'])]
     #[Assert\Choice(choices: ['oui', 'non'])]
-    private string $declencherAlerte = 'non';
+    private ?string $declencherAlerte = 'non';
 
-    #[ORM\Column(name: 'is_deleted')]
+    #[ORM\Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
     private bool $isDeleted = false;
 
     // Getters et Setters
@@ -74,14 +74,14 @@ class Produit
         return $this;
     }
 
-    public function getPrixVenteHt(): float
+    public function getPrixVenteHt(): ?string
     {
-        return (float) $this->prixVenteHt;
+        return $this->prixVenteHt;
     }
 
-    public function setPrixVenteHt(float $prixVenteHt): self
+    public function setPrixVenteHt(string $prixVenteHt): self
     {
-        $this->prixVenteHt = (string) $prixVenteHt;
+        $this->prixVenteHt = $prixVenteHt;
         return $this;
     }
 

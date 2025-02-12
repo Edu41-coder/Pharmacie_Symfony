@@ -11,20 +11,35 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Component\Form\FormFactoryInterface;
+use Knp\Component\Pager\PaginatorInterface;
 
 #[Route('/produits')]
 class ProduitController extends AbstractController
 {
     public function __construct(
         private ProduitService $produitService,
-        private FormFactoryInterface $formFactory
+        private FormFactoryInterface $formFactory,
+        private PaginatorInterface $paginator
     ) {}
 
     #[Route('/', name: 'produits_index')]
-    public function index(): Response
+    public function index(Request $request): Response
     {
+        $sortField = $request->query->get('sort', 'p.nom');
+        $sortOrder = $request->query->get('direction', 'asc');
+        
+        $query = $this->produitService->createSortedQuery($sortField, $sortOrder);
+        
+        $pagination = $this->paginator->paginate(
+            $query->getQuery(),
+            $request->query->getInt('page', 1),
+            15 // Nombre d'éléments par page
+        );
+
         return $this->render('produits/index.html.twig', [
-            'produits' => $this->produitService->findAll()
+            'pagination' => $pagination,
+            'sortField' => $sortField,
+            'sortOrder' => $sortOrder
         ]);
     }
 

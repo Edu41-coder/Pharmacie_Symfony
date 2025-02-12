@@ -5,6 +5,7 @@ namespace App\Service;
 use App\Entity\Produit;
 use App\Repository\ProduitRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\ORM\QueryBuilder;
 
 class ProduitService
 {
@@ -48,6 +49,19 @@ class ProduitService
     public function findLowStock(): array
     {
         return $this->produitRepository->findLowStock();
+    }
+
+    public function createSortedQuery(string $sortField, string $sortOrder): QueryBuilder
+    {
+        $allowedFields = ['p.nom', 'p.prixVenteHt', 'p.prescription', 'p.tauxRemboursement'];
+        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'p.nom';
+        $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
+
+        return $this->produitRepository->createQueryBuilder('p')
+            ->select('p')
+            ->where('p.isDeleted = :isDeleted')
+            ->setParameter('isDeleted', false)
+            ->addOrderBy($sortField, $sortOrder);
     }
 
     private function hydrateProduit(Produit $produit, array $data): void

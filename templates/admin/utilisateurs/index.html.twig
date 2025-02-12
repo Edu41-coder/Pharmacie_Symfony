@@ -4,6 +4,7 @@
 
 {% block body %}
 <div class="container">
+    {% include 'partials/_breadcrumb_user.html.twig' with {'current_route': 'admin_users_index'} %}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Gestion des utilisateurs</h1>
         <a href="{{ path('admin_users_new') }}" class="btn btn-primary">
@@ -17,7 +18,6 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
                             <th>Email</th>
                             <th>Prénom</th>
                             <th>Nom</th>
@@ -29,7 +29,6 @@
                     <tbody>
                         {% for user in users %}
                             <tr>
-                                <td>{{ user.id }}</td>
                                 <td>{{ user.email }}</td>
                                 <td>{{ user.prenom }}</td>
                                 <td>{{ user.nom }}</td>

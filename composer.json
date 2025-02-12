@@ -9,6 +9,7 @@
         "doctrine/doctrine-bundle": "^2.13",
         "doctrine/doctrine-migrations-bundle": "^3.4",
         "doctrine/orm": "^3.3",
+        "knplabs/knp-paginator-bundle": "^6.6",
         "symfony/asset": "6.4.*",
         "symfony/console": "6.4.*",
         "symfony/debug-bundle": "6.4.*",

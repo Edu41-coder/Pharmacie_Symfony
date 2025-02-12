@@ -1,0 +1,160 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Gestion de l'inventaire{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% include 'partials/_breadcrumb_inventaire.html.twig' with {'current_route': 'inventaire_index'} %}
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion de l'inventaire</h1>
+        <div>
+            <button type="button" class="btn btn-success me-2" data-bs-toggle="modal" data-bs-target="#createAllModal">
+                <i class="fas fa-plus"></i> Créer inventaire complet
+            </button>
+            <a href="{{ path('inventaire_new') }}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Ajouter un produit
+            </a>
+        </div>
+    </div>
+
+    {# Modal de confirmation pour créer l'inventaire complet #}
+    <div class="modal fade" id="createAllModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Confirmer la création</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Cette action va créer un inventaire pour tous les produits non inventoriés avec un stock initial de 10.</p>
+                    <p class="text-center fw-bold">Voulez-vous continuer ?</p>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                    <form action="{{ path('inventaire_new_all') }}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-check"></i> Confirmer
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <a href="{{ path('inventaire_index', {'sort': 'p.nom', 'direction': sortField == 'p.nom' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Produit
+                                    {% if sortField == 'p.nom' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('inventaire_index', {'sort': 'i.stock', 'direction': sortField == 'i.stock' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Stock
+                                    {% if sortField == 'i.stock' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('inventaire_index', {'sort': 'i.last_modified', 'direction': sortField == 'i.last_modified' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Dernière modification
+                                    {% if sortField == 'i.last_modified' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for inventaire in pagination %}
+                            <tr>
+                                <td>{{ inventaire.produit.nom }}</td>
+                                <td>{{ inventaire.stock }}</td>
+                                <td>{{ inventaire.lastModified|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('inventaire_show', {'id': inventaire.produitId}) }}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Voir détails">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <a href="{{ path('inventaire_edit', {'id': inventaire.produitId}) }}" 
+                                           class="btn btn-sm btn-outline-primary" 
+                                           title="Modifier">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <button type="button" 
+                                                class="btn btn-sm btn-outline-danger" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#deleteModal{{ inventaire.produitId }}" 
+                                                title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {# Modal de confirmation de suppression #}
+                            <div class="modal fade" id="deleteModal{{ inventaire.produitId }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirmer la suppression</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Êtes-vous sûr de vouloir supprimer l'inventaire du produit :</p>
+                                            <p class="text-center fw-bold">{{ inventaire.produit.nom }}</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <form action="{{ path('inventaire_delete', {'id': inventaire.produitId}) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ inventaire.produitId) }}">
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucun inventaire trouvé</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                <div class="navigation d-flex justify-content-center">
+                    {{ knp_pagination_render(pagination, null, {}, {
+                        'align': 'center',
+                        'size': 'small',
+                        'rounded': true
+                    }) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

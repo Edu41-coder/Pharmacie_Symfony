@@ -28,6 +28,11 @@ controllers:
         namespace: App\Controller
     type: attribute
 
+# Route pour les API
+api_routes:
+    resource: '../src/Controller/Api/'
+    type: attribute
+
 
 
 

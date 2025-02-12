@@ -1,0 +1,63 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Création Inventaire{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script>
+        $(document).ready(function() {
+            $('#{{ form.produit.vars.id }}').select2({
+                placeholder: 'Sélectionnez un produit',
+                allowClear: true,
+                width: '100%'
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% include 'partials/_breadcrumb_inventaire.html.twig' with {'current_route': 'inventaire_new'} %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title mb-4">Ajouter un produit à l'inventaire</h1>
+
+                    {{ form_start(form, {'attr': {'class': 'needs-validation'}}) }}
+                    
+                    <div class="mb-3">
+                        {{ form_label(form.produit, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.produit, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.produit) }}
+                    </div>
+
+                    <div class="mb-3">
+                        {{ form_label(form.stock, null, {'label_attr': {'class': 'form-label'}}) }}
+                        {{ form_widget(form.stock, {'attr': {'class': 'form-control'}}) }}
+                        {{ form_errors(form.stock) }}
+                    </div>
+
+                    <div class="d-grid gap-2">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer
+                        </button>
+                        <a href="{{ path('inventaire_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+
+                    {{ form_end(form) }}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

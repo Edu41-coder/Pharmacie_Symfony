@@ -8,6 +8,8 @@ Encore
     .setOutputPath('public/build/')
     .setPublicPath('/build')
     .addEntry('app', './assets/app.js')
+    .addEntry('produits', './assets/js/pages/produits/index.js')
+    .addEntry('inventaire', './assets/js/pages/inventaire/inventaire.js')
     .enableStimulusBridge('./assets/controllers.json')
     .splitEntryChunks()
     .enableSingleRuntimeChunk()

@@ -1,0 +1,112 @@
+// Styles pour la recherche
+.search-container {
+    position: relative;
+
+    .search-feedback {
+        color: #6c757d;
+        font-size: 0.875rem;
+        margin-top: 0.25rem;
+    }
+
+    input:focus + .search-feedback {
+        display: block;
+    }
+}
+
+.search-results {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-radius: 0 0 4px 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    z-index: 1000;
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+.search-item {
+    padding: 8px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #eee;
+
+    &:hover {
+        background-color: #f8f9fa;
+    }
+
+    &.active {
+        background-color: #e9ecef;
+    }
+}
+
+// Styles de pagination
+.navigation {
+    margin-top: 2rem;
+
+    .pagination {
+        gap: 0.5rem;
+
+        .page-item {
+            .page-link {
+                padding: 0.5rem 1rem;
+                color: var(--bs-primary);
+                background-color: #fff;
+                border: 1px solid #dee2e6;
+                border-radius: 0.375rem;
+                transition: all 0.2s ease-in-out;
+
+                &:hover {
+                    background-color: #e9ecef;
+                    border-color: #dee2e6;
+                    color: var(--bs-primary);
+                }
+            }
+
+            &.active {
+                .page-link {
+                    background-color: var(--bs-primary);
+                    border-color: var(--bs-primary);
+                    color: #fff;
+                    
+                    &:hover {
+                        background-color: darken(#0d6efd, 5%);
+                    }
+                }
+            }
+
+            &.disabled {
+                .page-link {
+                    color: #6c757d;
+                    pointer-events: none;
+                    background-color: #fff;
+                    border-color: #dee2e6;
+                }
+            }
+
+            // Style pour les flèches précédent/suivant
+            &:first-child, &:last-child {
+                .page-link {
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+}
+
+// Ajustement pour la version mobile
+@media (max-width: 576px) {
+    .navigation {
+        .pagination {
+            gap: 0.25rem;
+
+            .page-item {
+                .page-link {
+                    padding: 0.375rem 0.75rem;
+                    font-size: 0.875rem;
+                }
+            }
+        }
+    }
+} 

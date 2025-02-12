@@ -28,10 +28,32 @@ body {
 
 @import "pages/login";
 @import "pages/dashboard";
+@import "pages/produits";
 
 .disabled {
     color: #6c757d !important;
     pointer-events: none;
     cursor: not-allowed;
     opacity: 0.65;
+}
+
+.logout-button {
+    &:hover {
+        color: #dc3545 !important;
+    }
+}
+
+.modal-content {
+    border: none;
+    box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+.modal-header {
+    border-bottom: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.modal-footer {
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
 }

@@ -18,7 +18,7 @@
                         <ul class="navbar-nav flex-wrap" style="margin-top: 7px !important;">
                             <li class="nav-item"><a class="nav-link" href="{{ path('app_dashboard') }}">Accueil</a></li>
                             <li class="nav-item logout-item" style="position: absolute !important; right: -150px !important; top: 50px !important;">
-                                <a class="nav-link logout-button" href="{{ path('app_logout') }}">
+                                <a class="nav-link logout-button" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal">
                                     <i class="fas fa-sign-out-alt"></i>
                                     Déconnexion
                                 </a>
@@ -27,9 +27,11 @@
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('produits_index') }}">Produits</a>
                             </li>
-                            <li class="nav-item"><a class="nav-link disabled" href="#">Clients</a></li>
-                            <li class="nav-item"><a class="nav-link disabled" href="#">Inventaire</a></li>
+                            <li class="nav-item">
+                                <a class="nav-link" href="{{ path('inventaire_index') }}">Inventaire</a>
+                            </li>
                             <li class="nav-item"><a class="nav-link disabled" href="#">À Commander</a></li>
+                            <li class="nav-item"><a class="nav-link disabled" href="#">Clients</a></li>                            
                             <li class="nav-item"><a class="nav-link disabled" href="#">Mes Documents</a></li>
                             {% if is_granted('ROLE_ADMIN') %}
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Comptabilité</a></li>

@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de l'inventaire - {{ inventaire.produit.nom }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% include 'partials/_breadcrumb_inventaire.html.twig' with {
+        'current_route': 'inventaire_show',
+        'inventaire': inventaire
+    } %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title mb-4">Détails de l'inventaire</h1>
+
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Produit</th>
+                                <td>{{ inventaire.produit.nom }}</td>
+                            </tr>
+                            <tr>
+                                <th>Stock actuel</th>
+                                <td>{{ inventaire.stock }}</td>
+                            </tr>
+                            <tr>
+                                <th>Dernière modification</th>
+                                <td>{{ inventaire.lastModified|date('d/m/Y H:i') }}</td>
+                            </tr>
+                            {% if inventaire.produit.alerte %}
+                                <tr>
+                                    <th>Seuil d'alerte</th>
+                                    <td>
+                                        {% if inventaire.stock <= inventaire.produit.alerte %}
+                                            <span class="badge bg-danger">Stock bas ({{ inventaire.produit.alerte }})</span>
+                                        {% else %}
+                                            <span class="badge bg-success">Stock OK ({{ inventaire.produit.alerte }})</span>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="{{ path('inventaire_edit', {'id': inventaire.produitId}) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <a href="{{ path('inventaire_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %} 

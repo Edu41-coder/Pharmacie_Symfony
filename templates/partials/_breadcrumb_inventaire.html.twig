@@ -1,0 +1,38 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route != 'inventaire_index' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('inventaire_index') }}" class="text-decoration-none">
+                    <i class="fas fa-boxes"></i> Inventaire
+                </a>
+            </li>
+        {% else %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-boxes"></i> Inventaire
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'inventaire_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus-circle"></i> Nouveau produit
+            </li>
+        {% elseif current_route == 'inventaire_new_all' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus-circle"></i> Créer inventaire complet
+            </li>
+        {% elseif current_route == 'inventaire_edit' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier {{ inventaire.produit.nom }}
+            </li>
+        {% elseif current_route == 'inventaire_show' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-eye"></i> Détails de {{ inventaire.produit.nom }}
+            </li>
+        {% endif %}
+    </ol>
+</nav> 

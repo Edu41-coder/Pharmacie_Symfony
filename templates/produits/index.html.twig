@@ -2,11 +2,40 @@
 
 {% block title %}Gestion des produits{% endblock %}
 
+{% block stylesheets %}
+    {{ parent() }}
+    {{ encore_entry_link_tags('produits') }}
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ encore_entry_script_tags('produits') }}
+{% endblock %}
+
 {% block body %}
 <div class="container">
+    {% include 'partials/_breadcrumb_produit.html.twig' with {'current_route': 'produits_index'} %}
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <div class="search-container">
+                <input type="text" 
+                       id="searchProduct" 
+                       class="form-control" 
+                       placeholder="Rechercher un produit (minimum 3 caractères)..."
+                       minlength="3"
+                       autocomplete="off">
+                <div id="searchResults" class="search-results d-none">
+                </div>
+                <div class="search-feedback text-muted small mt-1 d-none">
+                    Veuillez saisir au moins 3 caractères
+                </div>
+            </div>
+        </div>
+    </div>
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1>Liste des produits</h1>
         {% if is_granted('ROLE_ADMIN') %}
+            <div data-role="ROLE_ADMIN" class="d-none"></div>
             <a href="{{ path('produits_new') }}" class="btn btn-primary">
                 <i class="fas fa-plus"></i> Nouveau produit
             </a>
@@ -19,18 +48,52 @@
                 <table class="table table-hover">
                     <thead class="table-light">
                         <tr>
-                            <th>ID</th>
-                            <th>Nom</th>
-                            <th>Prix HT</th>
-                            <th>Prescription</th>
-                            <th>Remboursement</th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.nom', 'direction': sortField == 'p.nom' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Nom
+                                    {% if sortField == 'p.nom' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.prixVenteHt', 'direction': sortField == 'p.prixVenteHt' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Prix HT
+                                    {% if sortField == 'p.prixVenteHt' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.prescription', 'direction': sortField == 'p.prescription' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Prescription
+                                    {% if sortField == 'p.prescription' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.tauxRemboursement', 'direction': sortField == 'p.tauxRemboursement' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Remboursement
+                                    {% if sortField == 'p.tauxRemboursement' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
                     <tbody>
-                        {% for produit in produits %}
+                        {% for produit in pagination %}
                             <tr>
-                                <td>{{ produit.id }}</td>
                                 <td>{{ produit.nom }}</td>
                                 <td>{{ produit.prixVenteHt|number_format(2, ',', ' ') }} €</td>
                                 <td>
@@ -104,8 +167,16 @@
                         {% endfor %}
                     </tbody>
                 </table>
+                <div class="navigation d-flex justify-content-center">
+                    {{ knp_pagination_render(pagination, null, {}, {
+                        'align': 'center',
+                        'size': 'small',
+                        'rounded': true
+                    }) }}
+                </div>
             </div>
         </div>
     </div>
 </div>
+<div id="deleteModalsContainer"></div>
 {% endblock %} 
