@@ -27,7 +27,17 @@
             {% endfor %}
             
             {# Contenu de la page #}
-            {% block body %}{% endblock %}
+            {% block body %}
+                {# Contenu principal #}
+                {% block content %}{% endblock %}
+
+                {# Bloc de pagination #}
+                {% block pagination %}
+                    {% if pagination is defined %}
+                        {{ knp_pagination_render(pagination, 'pagination/custom_pagination.html.twig') }}
+                    {% endif %}
+                {% endblock %}
+            {% endblock %}
         </main>
 
         {# Footer #}

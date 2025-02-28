@@ -1,0 +1,30 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route != 'a_commander_index' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('a_commander_index') }}" class="text-decoration-none">
+                    <i class="fas fa-clipboard-list"></i> À Commander
+                </a>
+            </li>
+        {% else %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-clipboard-list"></i> À Commander
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'a_commander_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus"></i> Nouvelle liste
+            </li>
+        {% elseif current_route == 'a_commander_edit' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier la liste #{{ a_commander.id }}
+            </li>
+        {% endif %}
+    </ol>
+</nav> 

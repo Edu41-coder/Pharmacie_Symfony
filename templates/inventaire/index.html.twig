@@ -10,7 +10,7 @@
     {{ parent() }}
 {% endblock %}
 
-{% block body %}
+{% block content %}
 <div class="container">
     {% include 'partials/_breadcrumb_inventaire.html.twig' with {'current_route': 'inventaire_index'} %}
     <div class="d-flex justify-content-between align-items-center mb-4">
@@ -75,6 +75,8 @@
                                     {% endif %}
                                 </a>
                             </th>
+                            <th>Seuil d'alerte</th>
+                            <th>État alerte</th>
                             <th>
                                 <a href="{{ path('inventaire_index', {'sort': 'i.last_modified', 'direction': sortField == 'i.last_modified' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
                                     Dernière modification
@@ -92,7 +94,27 @@
                         {% for inventaire in pagination %}
                             <tr>
                                 <td>{{ inventaire.produit.nom }}</td>
-                                <td>{{ inventaire.stock }}</td>
+                                <td>
+                                    {% if inventaire.produit.alerte and inventaire.stock <= inventaire.produit.alerte and inventaire.produit.declencherAlerte == 'oui' %}
+                                        <span class="badge bg-danger">{{ inventaire.stock }}</span>
+                                    {% else %}
+                                        {{ inventaire.stock }}
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if inventaire.produit.alerte %}
+                                        {{ inventaire.produit.alerte }} unités
+                                    {% else %}
+                                        <span class="text-muted">Non défini</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if inventaire.produit.declencherAlerte == 'oui' %}
+                                        <span class="badge bg-success">Activée</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Désactivée</span>
+                                    {% endif %}
+                                </td>
                                 <td>{{ inventaire.lastModified|date('d/m/Y H:i') }}</td>
                                 <td>
                                     <div class="btn-group">
@@ -146,13 +168,6 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div class="navigation d-flex justify-content-center">
-                    {{ knp_pagination_render(pagination, null, {}, {
-                        'align': 'center',
-                        'size': 'small',
-                        'rounded': true
-                    }) }}
-                </div>
             </div>
         </div>
     </div>

@@ -10,19 +10,19 @@
     </div>
 
     <div class="container">
-        <div class="row g-4 justify-content-center">
-            {# Cards pour tous les utilisateurs #}
+        {# Première ligne avec Clients, Inventaire, À Commander #}
+        <div class="row g-4 justify-content-center mb-4">
             <div class="col-md-3">
-                <a href="#" class="card action-card h-100 shadow-sm">
+                <a href="{{ path('client_index') }}" class="card action-card h-100 shadow-sm">
                     <div class="card-body text-center">
-                        <i class="fas fa-cash-register fa-3x mb-3"></i>
-                        <h5 class="card-title">Ventes</h5>
+                        <i class="fas fa-users fa-3x mb-3"></i>
+                        <h5 class="card-title">Clients</h5>
                     </div>
                 </a>
             </div>
 
             <div class="col-md-3">
-                <a href="#" class="card action-card h-100 shadow-sm">
+                <a href="{{ path('inventaire_index') }}" class="card action-card h-100 shadow-sm">
                     <div class="card-body text-center">
                         <i class="fas fa-boxes fa-3x mb-3"></i>
                         <h5 class="card-title">Inventaire</h5>
@@ -35,6 +35,18 @@
                     <div class="card-body text-center">
                         <i class="fas fa-clipboard-list fa-3x mb-3"></i>
                         <h5 class="card-title">À Commander</h5>
+                    </div>
+                </a>
+            </div>
+        </div>
+
+        {# Deuxième ligne avec Ventes (plus grande) #}
+        <div class="row g-4 justify-content-center">
+            <div class="col-md-6">
+                <a href="#" class="card action-card action-card-large h-100 shadow-sm">
+                    <div class="card-body text-center">
+                        <i class="fas fa-cash-register fa-4x mb-3"></i>
+                        <h5 class="card-title">Ventes</h5>
                     </div>
                 </a>
             </div>

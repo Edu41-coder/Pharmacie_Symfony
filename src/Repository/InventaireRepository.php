@@ -34,4 +34,13 @@ class InventaireRepository extends ServiceEntityRepository
             ->where('p.isDeleted = :isDeleted')
             ->setParameter('isDeleted', false);
     }
+
+    public function findLowStock(): array
+    {
+        return $this->createQueryBuilder('i')
+            ->where('i.stock < :minStock')
+            ->setParameter('minStock', 5)
+            ->getQuery()
+            ->getResult();
+    }
 } 

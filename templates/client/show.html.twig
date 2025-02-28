@@ -1,0 +1,76 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails du client - {{ client.prenom }} {{ client.nom }}{% endblock %}
+
+{% block body %}
+<div class="container">
+    {% include 'partials/_breadcrumb_client.html.twig' with {
+        'current_route': 'client_show',
+        'client': client
+    } %}
+    
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <h1 class="card-title mb-4">Détails du client</h1>
+
+                    <table class="table">
+                        <tbody>
+                            <tr>
+                                <th>Nom</th>
+                                <td>{{ client.nom }}</td>
+                            </tr>
+                            <tr>
+                                <th>Prénom</th>
+                                <td>{{ client.prenom }}</td>
+                            </tr>
+                            <tr>
+                                <th>Email</th>
+                                <td>{{ client.email }}</td>
+                            </tr>
+                            <tr>
+                                <th>Téléphone</th>
+                                <td>{{ client.telephone ?: 'Non renseigné' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Adresse</th>
+                                <td>{{ client.adresse ?: 'Non renseignée' }}</td>
+                            </tr>
+                            <tr>
+                                <th>N° Carte Vitale</th>
+                                <td>{{ client.numeroCarteVitale ?: 'Non renseigné' }}</td>
+                            </tr>
+                            <tr>
+                                <th>Chèques impayés</th>
+                                <td>
+                                    {% if client.chequesImpayes %}
+                                        <span class="badge bg-danger">Oui</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Non</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if client.commentaire %}
+                                <tr>
+                                    <th>Commentaire</th>
+                                    <td>{{ client.commentaire }}</td>
+                                </tr>
+                            {% endif %}
+                        </tbody>
+                    </table>
+
+                    <div class="d-flex gap-2 mt-4">
+                        <a href="{{ path('client_edit', {'id': client.id}) }}" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Modifier
+                        </a>
+                        <a href="{{ path('client_index') }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

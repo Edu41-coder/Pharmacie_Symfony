@@ -83,4 +83,23 @@
             font-size: 1rem;
         }
     }
+
+    .action-card-large {
+        .card-body {
+            padding: 3rem 2rem;
+        }
+
+        i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.5rem;
+        }
+
+        &:hover {
+            transform: scale(1.03);
+        }
+    }
 } 

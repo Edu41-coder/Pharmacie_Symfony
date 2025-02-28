@@ -64,8 +64,8 @@
 
     .logout-item {
         position: absolute !important;
-        bottom: 10px;
-        right: 20px;
+        bottom: 15px;
+        right: 25px;
         margin: 0 !important;
         z-index: 10;
 
@@ -83,9 +83,15 @@
                 font-size: 1rem;
             }
 
-            &:hover {
+            &:hover,
+            &:active,
+            &:focus {
                 background-color: rgba(255, 255, 255, 0.2);
                 transform: scale(1.05);
+            }
+
+            &:focus {
+                outline: none;
             }
         }
     }
@@ -127,17 +133,18 @@
 
     .navbar {
         background-color: transparent !important;
-        padding: 7px 0 0 0 !important; // Forcer le padding top avec !important
+        padding: 7px 0 0 0 !important;
         position: relative;
         min-height: 95px;
         
         .navbar-nav {
             display: grid;
-            grid-template-columns: repeat(8, 1fr);
-            gap: 0.5rem 1rem;
+            grid-template-columns: repeat(7, 1fr);
+            grid-template-rows: repeat(2, auto);
+            gap: 0.6rem 1.5rem;
             width: 100%;
-            margin: 0; // Enlever la marge précédente
-            padding: 0 1rem 50px 1rem;
+            margin: 0;
+            padding: 0.5rem 1rem 50px 1rem;
             list-style-type: none;
 
             .nav-item {
@@ -145,26 +152,17 @@
                 justify-content: center;
                 align-items: center;
                 margin: 0;
-                padding: 0.5rem 0;
+                padding: 0.3rem 0;
 
                 .nav-link {
-                    font-size: 0.9rem;
-                    white-space: nowrap;
-                    text-align: center;
-                    color: white;
-                    text-decoration: none;
-                    transition: all 0.3s ease-out;
-                    padding: 0.5rem;
-                    width: 100%;
-                    display: flex;
-                    justify-content: center;
-                    align-items: center;
+                    font-size: 1.17rem;
+                    padding: 0.3rem;
+                }
 
-                    &:hover:not(.disabled) {
-                        text-decoration: underline;
-                        transform: scale(1.05);
-                        filter: brightness(1.2);
-                    }
+                &:nth-last-child(1) {
+                    grid-column: 4;
+                    grid-row: 2;
+                    margin-top: 0.2rem;
                 }
             }
         }
@@ -198,18 +196,23 @@
 
 // Styles spécifiques pour le header
 .header {
-    background-color: var(--bs-primary) !important;
+    background-image: linear-gradient(
+        to top,
+        var(--bs-primary),
+        lighten(#007bff, 15%)
+    ) !important;
     position: relative;
     transition: transform 0.3s ease;
-    padding-bottom: 30px;  // Espace pour le bouton
+    padding-bottom: 30px;
     margin-bottom: 5px;
+    min-height: 95px;
 
     &.hidden {
         transform: translateY(calc(-100% + 30px));  // Garde le bouton visible
     }
 
     .header-toggle {
-        bottom: 0;  // Aligné avec le padding-bottom
+        bottom: 0;
         border-radius: 0 0 5px 5px;
         background-color: var(--bs-primary);
     }
@@ -217,18 +220,23 @@
 
 // Styles spécifiques pour le footer
 .footer {
-    background-color: #198754 !important;
+    background-image: linear-gradient(
+        to top,
+        darken(#198754, 10%),
+        #198754
+    ) !important;
     position: relative;
     transition: transform 0.3s ease;
-    padding-top: 30px;  // Espace pour le bouton
+    padding-top: 30px;
     margin-top: 5px;
+    min-height: 95px;
 
     &.hidden {
         transform: translateY(calc(100% - 30px));  // Garde le bouton visible
     }
 
     .footer-toggle {
-        top: 0;  // Aligné avec le padding-top
+        top: 0;
         border-radius: 5px 5px 0 0;
         background-color: #198754;
     }
@@ -245,6 +253,11 @@
     .header, .footer {
         z-index: 1040; // Maintenez un z-index élevé
 
+        // Cache uniquement le footer en mobile
+        &.footer {
+            display: none !important;
+        }
+
         .col-md-4 {
             max-width: 60px;
         }
@@ -257,42 +270,53 @@
 
         .navbar {
             width: 100%;
+            position: relative; // Pour le positionnement du bouton
             
             .navbar-collapse {
+                position: absolute;
+                top: 100%; // Le positionne juste sous la navbar
+                left: 0;
+                right: 0;
                 width: 100%;
-                padding-left: 0;
-                background-color: var(--bs-primary) !important; // Bleu pour le header
-                margin-top: 1rem;
                 padding: 1rem;
-                border-radius: 4px;
-            }
+                margin: 0; // Enlève la marge du haut
+                background-image: linear-gradient(
+                    to top,
+                    var(--bs-primary),
+                    lighten(#007bff, 10%)
+                ) !important;
+                border-radius: 0 0 4px 4px; // Arrondi uniquement en bas
+                box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
 
-            .navbar-nav {
-                grid-template-columns: repeat(1, 1fr);
-                gap: 0.5rem;
-                width: 100%;
-                padding: 0;
-
-                .nav-item {
+                .navbar-nav {
+                    display: grid;
+                    grid-template-columns: repeat(3, 1fr);
+                    grid-auto-rows: auto;
+                    gap: 0.8rem;
+                    width: 100%;
+                    padding: 0.5rem;
                     margin: 0;
-                    width: 100%;
-                    
-                    .nav-link {
-                        font-size: 0.9rem;
+
+                    .nav-item {
+                        width: 100%;
                         text-align: center;
-                        color: white !important;
+                        
+                        .nav-link {
+                            font-size: 0.9rem;
+                            padding: 0.5rem;
+                            white-space: normal;
+                            color: white !important;
+                            line-height: 1.2;
+                            height: 100%;
+                            display: flex;
+                            align-items: center;
+                            justify-content: center;
+                        }
                     }
-                }
-            }
 
-            .logout-item {
-                position: static !important;
-                width: 100% !important;
-                margin-top: 1rem !important;
-
-                .logout-button {
-                    justify-content: center;
-                    width: 100%;
+                    .logout-item {
+                        display: none; // Cache la version dans le menu
+                    }
                 }
             }
         }
@@ -335,11 +359,97 @@
             .navbar-collapse {
                 width: 100%;
                 padding-left: 0;
-                background-color: #198754 !important; // Vert pour le footer
+                background-image: linear-gradient(
+                    to top,
+                    darken(#198754, 10%),
+                    #198754
+                ) !important;
                 margin-top: 1rem;
                 padding: 1rem;
                 border-radius: 4px;
             }
         }
+    }
+
+    // Style du bouton déconnexion dans la navbar
+    .logout-item {
+        position: absolute !important;
+        top: 50% !important;
+        right: 70px !important; // Augmenté de 60px à 70px
+        transform: translateY(-50%);
+        margin: 0 !important;
+        z-index: 1050;
+        list-style: none; // Supprime le point noir
+        padding: 0; // Supprime le padding par défaut des li
+        
+        .logout-button {
+            padding: 0.4rem 0.8rem !important;
+            font-size: 0.9rem !important;
+            background-color: rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            text-decoration: none; // Assure qu'il n'y a pas de soulignement
+            
+            i {
+                font-size: 0.9rem;
+            }
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.2);
+            }
+        }
+    }
+}
+
+.logout-item-desktop, .logout-item-mobile {
+    list-style: none !important; // Supprime le point noir
+    
+    .logout-button {
+        color: white !important; // Force la couleur du texte en blanc
+        padding: 0.4rem 0.8rem !important;
+        font-size: 0.9rem !important;
+        background-color: rgba(255, 255, 255, 0.1) !important;
+        border-radius: 20px !important;
+        display: flex !important;
+        align-items: center !important;
+        gap: 0.4rem !important;
+        text-decoration: none !important;
+        
+        i {
+            font-size: 0.9rem;
+            color: white !important; // Force la couleur de l'icône en blanc
+        }
+
+        &:hover {
+            background-color: rgba(255, 255, 255, 0.2) !important;
+            color: white !important; // Maintient la couleur blanche au survol
+        }
+    }
+}
+
+.logout-item-desktop {
+    position: absolute !important;
+    right: -210px !important;
+    top: 50px !important;
+}
+
+.logout-item-mobile {
+    position: fixed !important;
+    right: 15px !important;
+    bottom: 15px !important;
+    z-index: 1050 !important;
+}
+
+@media (min-width: 769px) {
+    .logout-item-mobile {
+        display: none !important;
+    }
+}
+
+@media (max-width: 768px) {
+    .logout-item-desktop {
+        display: none !important;
     }
 }

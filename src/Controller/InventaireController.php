@@ -96,7 +96,9 @@ class InventaireController extends AbstractController
     #[Route('/{id}/edit', name: 'inventaire_edit', methods: ['GET', 'POST'])]
     public function edit(Request $request, Inventaire $inventaire): Response
     {
-        $form = $this->formFactory->create(InventaireType::class, $inventaire);
+        $form = $this->formFactory->create(InventaireType::class, $inventaire, [
+            'is_edit' => true
+        ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {

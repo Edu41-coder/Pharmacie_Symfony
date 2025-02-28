@@ -143,6 +143,8 @@ symfony serve
 # Terminal 2 - Pour Webpack Encore
 npm run watch
 
+npm run dev
+
 Avantages de watch :
 Développement plus rapide
 Pas besoin de recompiler manuellement

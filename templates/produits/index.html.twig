@@ -12,7 +12,7 @@
     {{ encore_entry_script_tags('produits') }}
 {% endblock %}
 
-{% block body %}
+{% block content %}
 <div class="container">
     {% include 'partials/_breadcrumb_produit.html.twig' with {'current_route': 'produits_index'} %}
     <div class="row mb-4">
@@ -88,6 +88,26 @@
                                     {% endif %}
                                 </a>
                             </th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.alerte', 'direction': sortField == 'p.alerte' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Seuil d'alerte
+                                    {% if sortField == 'p.alerte' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('produits_index', {'sort': 'p.declencherAlerte', 'direction': sortField == 'p.declencherAlerte' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Alerte activée
+                                    {% if sortField == 'p.declencherAlerte' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
                             <th>Actions</th>
                         </tr>
                     </thead>
@@ -108,6 +128,20 @@
                                         <span class="badge bg-info">{{ produit.tauxRemboursement }}%</span>
                                     {% else %}
                                         <span class="badge bg-secondary">Non remboursé</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if produit.alerte %}
+                                        {{ produit.alerte }} unités
+                                    {% else %}
+                                        <span class="text-muted">Non défini</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if produit.declencherAlerte == 'oui' %}
+                                        <span class="badge bg-success">Activée</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">Désactivée</span>
                                     {% endif %}
                                 </td>
                                 <td>
@@ -167,13 +201,6 @@
                         {% endfor %}
                     </tbody>
                 </table>
-                <div class="navigation d-flex justify-content-center">
-                    {{ knp_pagination_render(pagination, null, {}, {
-                        'align': 'center',
-                        'size': 'small',
-                        'rounded': true
-                    }) }}
-                </div>
             </div>
         </div>
     </div>

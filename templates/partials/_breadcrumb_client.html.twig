@@ -1,0 +1,34 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_home') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route != 'client_index' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('client_index') }}" class="text-decoration-none">
+                    <i class="fas fa-users"></i> Clients
+                </a>
+            </li>
+        {% else %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-users"></i> Clients
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'client_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-plus"></i> Nouveau client
+            </li>
+        {% elseif current_route == 'client_edit' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user-edit"></i> Modifier {{ client.prenom }} {{ client.nom }}
+            </li>
+        {% elseif current_route == 'client_show' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-user"></i> {{ client.prenom }} {{ client.nom }}
+            </li>
+        {% endif %}
+    </ol>
+</nav> 

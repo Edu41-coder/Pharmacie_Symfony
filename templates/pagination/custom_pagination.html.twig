@@ -1,0 +1,50 @@
+{% if pageCount > 1 %}
+    <nav>
+        <ul class="pagination justify-content-center">
+            {# Première page #}
+            {% if first is defined and current != first %}
+                <li class="page-item">
+                    <a class="page-link" style="background-color: #2E7D32; color: white; border-color: #2E7D32;" href="{{ path(route, query|merge({(pageParameterName): first})) }}" title="Première page">
+                        <i class="fas fa-angle-double-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {# Page précédente #}
+            {% if previous is defined %}
+                <li class="page-item">
+                    <a class="page-link" style="background-color: #2E7D32; color: white; border-color: #2E7D32;" href="{{ path(route, query|merge({(pageParameterName): previous})) }}" title="Page précédente">
+                        <i class="fas fa-angle-left"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {# Numéros de page #}
+            {% for page in pagesInRange %}
+                <li class="page-item {% if page == current %}active{% endif %}">
+                    <a class="page-link" style="{% if page == current %}background-color: #1B5E20; border-color: #1B5E20;{% else %}background-color: #2E7D32; border-color: #2E7D32;{% endif %} color: white;" href="{{ path(route, query|merge({(pageParameterName): page})) }}">
+                        {{ page }}
+                    </a>
+                </li>
+            {% endfor %}
+
+            {# Page suivante #}
+            {% if next is defined %}
+                <li class="page-item">
+                    <a class="page-link" style="background-color: #2E7D32; color: white; border-color: #2E7D32;" href="{{ path(route, query|merge({(pageParameterName): next})) }}" title="Page suivante">
+                        <i class="fas fa-angle-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+
+            {# Dernière page #}
+            {% if last is defined and current != last %}
+                <li class="page-item">
+                    <a class="page-link" style="background-color: #2E7D32; color: white; border-color: #2E7D32;" href="{{ path(route, query|merge({(pageParameterName): last})) }}" title="Dernière page">
+                        <i class="fas fa-angle-double-right"></i>
+                    </a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+{% endif %}

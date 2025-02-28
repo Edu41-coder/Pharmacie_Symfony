@@ -59,6 +59,8 @@ Utilisez symfony server:start
 Pour l'arrêter, utilisez symfony server:stop
 Le serveur de développement Symfony est utile pour le développement, mais en production, on utilise toujours un vrai serveur web comme Apache ou Nginx.
 
+npm run dev
+
 
 
 

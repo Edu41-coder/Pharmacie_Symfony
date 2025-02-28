@@ -14,22 +14,34 @@ class InventaireType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
-        $builder
-            ->add('produit', EntityType::class, [
-                'class' => Produit::class,
-                'choice_label' => 'nom',
-                'label' => 'Produit',
-                'required' => true,
-                'choices' => $options['produits_existants'],
-                'placeholder' => 'Sélectionnez un produit',
-            ])
-            ->add('stock', IntegerType::class, [
+        // Si c'est un formulaire d'édition, on n'affiche que le stock
+        if ($options['is_edit']) {
+            $builder->add('stock', IntegerType::class, [
                 'label' => 'Stock',
                 'required' => true,
                 'attr' => [
                     'min' => 0
                 ]
             ]);
+        } else {
+            // Pour la création, on garde tous les champs
+            $builder
+                ->add('produit', EntityType::class, [
+                    'class' => Produit::class,
+                    'choice_label' => 'nom',
+                    'label' => 'Produit',
+                    'required' => true,
+                    'choices' => $options['produits_existants'],
+                    'placeholder' => 'Sélectionnez un produit',
+                ])
+                ->add('stock', IntegerType::class, [
+                    'label' => 'Stock',
+                    'required' => true,
+                    'attr' => [
+                        'min' => 0
+                    ]
+                ]);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -37,6 +49,7 @@ class InventaireType extends AbstractType
         $resolver->setDefaults([
             'data_class' => Inventaire::class,
             'produits_existants' => [],
+            'is_edit' => false,
         ]);
     }
 } 
