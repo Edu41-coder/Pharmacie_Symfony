@@ -5,28 +5,30 @@
 {% block body %}
     {% include 'partials/_breadcrumb_a_commander.html.twig' with {'current_route': app.request.attributes.get('_route')} %}
 
-    <div class="container-fluid">
-        <h1 class="h2 mb-4">Listes À Commander</h1>
+    <div class="container">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h1>Listes À Commander</h1>
+        </div>
 
         {# Options de création #}
-        <div class="card mb-4">
+        <div class="card shadow-sm mb-4">
             <div class="card-header">
                 <h2 class="h5 mb-0">Créer une nouvelle liste</h2>
             </div>
             <div class="card-body">
                 <div class="row g-3">
                     <div class="col-md-4">
-                        <a href="{{ path('a_commander_new') }}" class="btn btn-success w-100">
+                        <a href="{{ path('a_commander_new') }}" class="btn btn-success w-100" title="Créer une liste vide">
                             <i class="fas fa-plus"></i> Liste vide
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ path('a_commander_new_from_inventory') }}" class="btn btn-primary w-100">
+                        <a href="{{ path('a_commander_new_from_inventory') }}" class="btn btn-primary w-100" title="Créer depuis l'inventaire">
                             <i class="fas fa-boxes"></i> Depuis l'inventaire complet
                         </a>
                     </div>
                     <div class="col-md-4">
-                        <a href="{{ path('a_commander_new_from_low_stock') }}" class="btn btn-warning w-100">
+                        <a href="{{ path('a_commander_new_from_low_stock') }}" class="btn btn-warning w-100" title="Créer depuis le stock insuffisant">
                             <i class="fas fa-exclamation-triangle"></i> Depuis le stock insuffisant
                         </a>
                     </div>
@@ -35,17 +37,17 @@
         </div>
 
         {# Liste des commandes existantes #}
-        <div class="card">
+        <div class="card shadow-sm">
             <div class="card-header">
                 <h2 class="h5 mb-0">Listes existantes</h2>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
-                    <table class="table table-striped table-hover">
-                        <thead>
+                    <table class="table table-hover">
+                        <thead class="table-light">
                             <tr>
                                 <th>
-                                    <a href="{{ path('a_commander_index', {sort: 'ac.id', direction: sortField == 'ac.id' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-dark">
+                                    <a href="{{ path('a_commander_index', {'sort': 'ac.id', 'direction': sortField == 'ac.id' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
                                         #ID Liste
                                         {% if sortField == 'ac.id' %}
                                             <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
@@ -54,7 +56,16 @@
                                         {% endif %}
                                     </a>
                                 </th>
-                                <th>Date de création</th>
+                                <th>
+                                    <a href="{{ path('a_commander_index', {'sort': 'ac.createdAt', 'direction': sortField == 'ac.createdAt' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                        Date de création
+                                        {% if sortField == 'ac.createdAt' %}
+                                            <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
                                 <th>Nombre de produits</th>
                                 <th>Actions</th>
                             </tr>
@@ -63,19 +74,51 @@
                             {% for liste in pagination %}
                                 <tr>
                                     <td>{{ liste.id }}</td>
-                                    <td>{{ liste.creationCommander.createdAt ? liste.creationCommander.createdAt|date('d/m/Y H:i') : 'N/A' }}</td>
-                                    <td>{{ liste.quantite }}</td>
+                                    <td>{{ liste.createdAt|date('d/m/Y H:i') }}</td>
+                                    <td>{{ liste.lignes|length }}</td>
                                     <td>
-                                        <a href="{{ path('a_commander_show', {id: liste.id}) }}" class="btn btn-sm btn-info">
-                                            <i class="fas fa-eye"></i> Voir la liste
-                                        </a>
-                                        <form action="{{ path('a_commander_delete', {id: liste.id}) }}" method="post" class="d-inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette liste ?')">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ liste.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Supprimer
+                                        <div class="btn-group">
+                                            <a href="{{ path('a_commander_show', {id: liste.id}) }}" 
+                                               class="btn btn-sm btn-outline-info" 
+                                               title="Voir la liste">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ liste.id }}" 
+                                                    title="Supprimer">
+                                                <i class="fas fa-trash"></i>
                                             </button>
-                                        </form>
+                                        </div>
                                     </td>
+                                </tr>
+
+                                {# Modal de confirmation de suppression #}
+                                <div class="modal fade" id="deleteModal{{ liste.id }}" tabindex="-1">
+                                    <div class="modal-dialog">
+                                        <div class="modal-content">
+                                            <div class="modal-header">
+                                                <h5 class="modal-title">Confirmer la suppression</h5>
+                                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                            </div>
+                                            <div class="modal-body">
+                                                <p>Êtes-vous sûr de vouloir supprimer cette liste de commande ?</p>
+                                                <p class="text-center fw-bold">Liste #{{ liste.id }}</p>
+                                            </div>
+                                            <div class="modal-footer">
+                                                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                <form action="{{ path('a_commander_delete', {id: liste.id}) }}" method="post" class="d-inline">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ liste.id) }}">
+                                                    <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                </form>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            {% else %}
+                                <tr>
+                                    <td colspan="4" class="text-center">Aucune liste à commander trouvée</td>
                                 </tr>
                             {% endfor %}
                         </tbody>

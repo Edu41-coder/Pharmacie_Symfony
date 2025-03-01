@@ -8,7 +8,6 @@ use App\Repository\InventaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
 use App\Entity\Inventaire;
-use App\Entity\CreationCommander;
 use Psr\Log\LoggerInterface;
 use App\Entity\LigneACommander;
 
@@ -28,28 +27,20 @@ class ACommanderService
 
         try {
             $aCommander = new ACommander();
-            
-            if (isset($data['produit'])) {
-                $aCommander->setProduit($data['produit']);
-            }
-            
-            if (isset($data['quantite'])) {
-                $aCommander->setQuantite($data['quantite']);
-            }
-
             $this->entityManager->persist($aCommander);
             $this->entityManager->flush();
 
-            // Créer l'entrée dans creation_a_commander
-            $creationCommander = new CreationCommander();
-            $creationCommander->setACommander($aCommander);
-            $creationCommander->setCreatedAt(new \DateTime());
-            
-            $this->entityManager->persist($creationCommander);
-            $this->entityManager->flush();
+            if (isset($data['produit']) && isset($data['quantite'])) {
+                $ligneProduit = new LigneACommander();
+                $ligneProduit->setACommander($aCommander);
+                $ligneProduit->setProduit($data['produit']);
+                $ligneProduit->setQuantite($data['quantite']);
+                
+                $this->entityManager->persist($ligneProduit);
+                $this->entityManager->flush();
+            }
             
             $connection->commit();
-
             return $aCommander;
         } catch (\Exception $e) {
             $connection->rollBack();
@@ -59,14 +50,14 @@ class ACommanderService
 
     public function createSortedQuery(string $sortField, string $sortOrder): QueryBuilder
     {
-        $allowedFields = ['p.nom', 'ac.quantite', 'ac.id', 'cc.createdAt'];
+        $allowedFields = ['p.nom', 'l.quantite', 'ac.id', 'ac.createdAt'];
         $sortField = in_array($sortField, $allowedFields) ? $sortField : 'ac.id';
         $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
 
         return $this->aCommanderRepository->createQueryBuilder('ac')
-            ->select('ac, p, cc')
-            ->join('ac.produit', 'p')
-            ->leftJoin('ac.creationCommander', 'cc')
+            ->select('ac, l, p')
+            ->leftJoin('ac.lignes', 'l')
+            ->leftJoin('l.produit', 'p')
             ->orderBy($sortField, $sortOrder);
     }
 
@@ -84,13 +75,6 @@ class ACommanderService
             // Créer une seule entrée dans a_commander
             $aCommander = new ACommander();
             $this->entityManager->persist($aCommander);
-            $this->entityManager->flush();
-
-            // Créer une seule entrée dans creation_commander
-            $creationCommander = new CreationCommander();
-            $creationCommander->setACommander($aCommander);
-            $creationCommander->setCreatedAt(new \DateTime());
-            $this->entityManager->persist($creationCommander);
             $this->entityManager->flush();
             
             foreach ($inventaires as $inventaire) {
@@ -131,38 +115,33 @@ class ACommanderService
                 throw new \Exception('Aucun produit en stock insuffisant trouvé');
             }
 
-            $createdAt = new \DateTime();
+            // Créer une seule liste pour tous les produits en stock bas
+            $aCommander = new ACommander();
+            $this->entityManager->persist($aCommander);
+            $this->entityManager->flush();
             
             $this->logger->info('Début de la création depuis les stocks insuffisants');
             $this->logger->debug('Nombre de produits en stock insuffisant trouvés: ' . count($inventaires));
             
             foreach ($inventaires as $inventaire) {
                 $produit = $inventaire->getProduit();
-                if (!$produit) {
+                if (!$produit || $produit->getDeclencherAlerte() !== 'oui') {
                     continue;
                 }
                 
-                // Calculer la quantité à commander basée sur le stock minimum
-                $quantiteACommander = $inventaire->getStockMinimum() - $inventaire->getQuantite();
-                if ($quantiteACommander <= 0) {
-                    continue;
-                }
+                // Si le stock est inférieur ou égal au seuil d'alerte, commander la différence + 1
+                // pour remonter au-dessus du seuil
+                $quantiteACommander = $produit->getAlerte() - $inventaire->getStock() + 1;
                 
-                $aCommander = new ACommander();
-                $aCommander->setProduit($produit);
-                $aCommander->setQuantite($quantiteACommander);
+                $ligneProduit = new LigneACommander();
+                $ligneProduit->setACommander($aCommander);
+                $ligneProduit->setProduit($produit);
+                $ligneProduit->setQuantite($quantiteACommander);
                 
-                $this->entityManager->persist($aCommander);
-                $this->entityManager->flush();
-                
-                $creationCommander = new CreationCommander();
-                $creationCommander->setACommander($aCommander);
-                $creationCommander->setCreatedAt($createdAt);
-                
-                $this->entityManager->persist($creationCommander);
-                $this->entityManager->flush();
+                $this->entityManager->persist($ligneProduit);
             }
             
+            $this->entityManager->flush();
             $connection->commit();
             
         } catch (\Exception $e) {
@@ -176,7 +155,19 @@ class ACommanderService
 
     public function updateACommander(ACommander $aCommander, array $data): void
     {
-        $this->hydrateACommander($aCommander, $data);
+        if (isset($data['lignes'])) {
+            foreach ($data['lignes'] as $ligneData) {
+                if (isset($ligneData['id'])) {
+                    // Mise à jour d'une ligne existante
+                    $ligne = $this->entityManager->getRepository(LigneACommander::class)->find($ligneData['id']);
+                    if ($ligne && $ligne->getACommander() === $aCommander) {
+                        if (isset($ligneData['quantite'])) {
+                            $ligne->setQuantite($ligneData['quantite']);
+                        }
+                    }
+                }
+            }
+        }
         $this->entityManager->flush();
     }
 
@@ -186,72 +177,50 @@ class ACommanderService
         $this->entityManager->flush();
     }
 
-    private function hydrateACommander(ACommander $aCommander, array $data): void
-    {
-        if (isset($data['produit'])) {
-            $aCommander->setProduit($data['produit']);
-        }
-        if (isset($data['quantite'])) {
-            $aCommander->setQuantite($data['quantite']);
-        }
-    }
-
-    public function getListesQuery(string $sortField, string $sortOrder): QueryBuilder
-    {
-        $allowedFields = ['cc.created_at', 'ac.id'];
-        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'cc.created_at';
-        $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
-
-        return $this->aCommanderRepository->createQueryBuilder('ac')
-            ->select('ac, cc')
-            ->join('ac.creationCommander', 'cc')
-            ->orderBy($sortField, $sortOrder)
-            ->groupBy('cc.created_at');
-    }
-
-    public function countProductsByDate(\DateTime $createdAt): int
-    {
-        return $this->aCommanderRepository->createQueryBuilder('ac')
-            ->select('COUNT(ac.id)')
-            ->join('ac.creationCommander', 'cc')
-            ->where('cc.createdAt = :createdAt')
-            ->setParameter('createdAt', $createdAt)
-            ->getQuery()
-            ->getSingleScalarResult();
-    }
-
     public function getListe(int $id): ?ACommander
     {
         return $this->aCommanderRepository->find($id);
     }
 
+    public function getProduitsListeQuery(int $listeId, string $sortField, string $sortOrder): QueryBuilder
+    {
+        $allowedFields = ['p.nom', 'l.quantite'];
+        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'p.nom';
+        $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
+
+        return $this->entityManager->createQueryBuilder()
+            ->select('l', 'p')
+            ->from('App\Entity\LigneACommander', 'l')
+            ->join('l.produit', 'p')
+            ->where('l.aCommander = :listeId')
+            ->setParameter('listeId', $listeId)
+            ->orderBy($sortField, $sortOrder);
+    }
+
     public function getProduitsListe(int $listeId, string $sortField, string $sortOrder): array
     {
-        $allowedFields = ['p.nom', 'ac.quantite'];
-        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'p.nom';
-        $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
-
-        return $this->aCommanderRepository->createQueryBuilder('ac')
-            ->select('ac, p')
-            ->join('ac.produit', 'p')
-            ->join('ac.creationCommander', 'cc')
-            ->where('ac.id = :listeId')
-            ->setParameter('listeId', $listeId)
-            ->orderBy($sortField, $sortOrder)
+        return $this->getProduitsListeQuery($listeId, $sortField, $sortOrder)
             ->getQuery()
             ->getResult();
     }
 
-    public function getProduitFromListe(int $liste_id, int $produit_id): ?ACommander
+    public function getListesQuery(string $sortField, string $sortOrder): QueryBuilder
     {
+        $allowedFields = ['ac.createdAt', 'ac.id'];
+        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'ac.createdAt';
+        $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
+
         return $this->aCommanderRepository->createQueryBuilder('ac')
-            ->select('ac, p')
-            ->join('ac.produit', 'p')
-            ->where('ac.id = :liste_id')
-            ->andWhere('p.id = :produit_id')
-            ->setParameter('liste_id', $liste_id)
-            ->setParameter('produit_id', $produit_id)
-            ->getQuery()
-            ->getOneOrNullResult();
+            ->select('ac')
+            ->orderBy($sortField, $sortOrder);
+    }
+
+    public function getProduitFromListe(int $liste_id, int $produit_id): ?LigneACommander
+    {
+        return $this->entityManager->getRepository(LigneACommander::class)
+            ->findOneBy([
+                'aCommander' => $liste_id,
+                'produit' => $produit_id
+            ]);
     }
 } 

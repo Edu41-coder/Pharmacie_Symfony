@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\ACommander;
+use App\Entity\LigneACommander;
 use App\Form\ACommanderType;
 use App\Service\ACommanderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,6 +12,7 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Knp\Component\Pager\PaginatorInterface;
 use Psr\Log\LoggerInterface;
+use Doctrine\ORM\EntityManagerInterface;
 
 #[Route('/a-commander')]
 class ACommanderController extends AbstractController
@@ -18,13 +20,14 @@ class ACommanderController extends AbstractController
     public function __construct(
         private ACommanderService $aCommanderService,
         private PaginatorInterface $paginator,
-        private LoggerInterface $logger
+        private LoggerInterface $logger,
+        private EntityManagerInterface $entityManager
     ) {}
 
     #[Route('/', name: 'a_commander_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
-        $sortField = $request->query->get('sort', 'cc.created_at');
+        $sortField = $request->query->get('sort', 'ac.createdAt');
         $sortOrder = $request->query->get('direction', 'desc');
 
         $query = $this->aCommanderService->getListesQuery($sortField, $sortOrder);
@@ -34,7 +37,7 @@ class ACommanderController extends AbstractController
             $request->query->getInt('page', 1),
             10,
             [
-                'defaultSortFieldName' => 'cc.created_at',
+                'defaultSortFieldName' => 'ac.createdAt',
                 'defaultSortDirection' => 'desc',
                 'pageParameterName' => 'page',
                 'sortFieldParameterName' => 'sort',
@@ -53,14 +56,14 @@ class ACommanderController extends AbstractController
     #[Route('/new', name: 'a_commander_new', methods: ['GET', 'POST'])]
     public function new(Request $request): Response
     {
-        $aCommander = new ACommander();
-        $form = $this->createForm(ACommanderType::class, $aCommander);
+        $ligneProduit = new LigneACommander();
+        $form = $this->createForm(ACommanderType::class, $ligneProduit);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->aCommanderService->createACommander([
-                'produit' => $aCommander->getProduit(),
-                'quantite' => $aCommander->getQuantite()
+                'produit' => $ligneProduit->getProduit(),
+                'quantite' => $ligneProduit->getQuantite()
             ]);
             
             $this->addFlash('success', 'Liste à commander créée avec succès');
@@ -88,42 +91,70 @@ class ACommanderController extends AbstractController
         return $this->redirectToRoute('a_commander_index');
     }
 
+    #[Route('/{id}', name: 'a_commander_show', methods: ['GET'])]
+    public function show(Request $request, int $id): Response
+    {
+        $sortField = $request->query->get('sort', 'p.nom');
+        $sortOrder = $request->query->get('direction', 'asc');
+
+        $liste = $this->aCommanderService->getListe($id);
+        if (!$liste) {
+            throw $this->createNotFoundException('Liste non trouvée');
+        }
+
+        $query = $this->aCommanderService->getProduitsListeQuery($id, $sortField, $sortOrder);
+        
+        $lignes = $this->paginator->paginate(
+            $query,
+            $request->query->getInt('page', 1),
+            10,
+            [
+                'defaultSortFieldName' => 'p.nom',
+                'defaultSortDirection' => 'asc',
+                'sortFieldParameterName' => 'sort',
+                'sortDirectionParameterName' => 'direction',
+                'pageParameterName' => 'page',
+                'template' => 'pagination/custom_pagination.html.twig'
+            ]
+        );
+
+        return $this->render('a_commander/show.html.twig', [
+            'liste' => $liste,
+            'lignes' => $lignes,
+            'sortField' => $sortField,
+            'sortOrder' => $sortOrder
+        ]);
+    }
+
     #[Route('/{liste_id}/produit/{produit_id}/edit', name: 'a_commander_edit_produit', methods: ['GET', 'POST'])]
     public function editProduit(Request $request, int $liste_id, int $produit_id): Response
     {
         $this->logger->debug('Tentative de modification du produit', [
             'liste_id' => $liste_id,
-            'produit_id' => $produit_id,
-            'request_uri' => $request->getRequestUri()
+            'produit_id' => $produit_id
         ]);
 
-        // Récupérer d'abord la liste pour vérifier qu'elle existe
         $liste = $this->aCommanderService->getListe($liste_id);
         if (!$liste) {
-            $this->logger->warning('Liste non trouvée', ['liste_id' => $liste_id]);
             $this->addFlash('error', 'Liste non trouvée');
             return $this->redirectToRoute('a_commander_index');
         }
 
-        $aCommander = $this->aCommanderService->getProduitFromListe($liste_id, $produit_id);
-        
-        if (!$aCommander) {
-            $this->logger->warning('Produit non trouvé', [
-                'liste_id' => $liste_id,
-                'produit_id' => $produit_id,
-                'liste_exists' => ($liste !== null)
-            ]);
+        $ligne = $this->entityManager->getRepository(LigneACommander::class)
+            ->findOneBy(['aCommander' => $liste_id, 'produit' => $produit_id]);
+
+        if (!$ligne) {
             $this->addFlash('error', 'Produit non trouvé dans la liste');
             return $this->redirectToRoute('a_commander_show', ['id' => $liste_id]);
         }
 
-        $form = $this->createForm(ACommanderType::class, $aCommander, [
+        $form = $this->createForm(ACommanderType::class, $ligne, [
             'edit_mode' => true
         ]);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->aCommanderService->updateACommander($aCommander, $form->getData()->toArray());
+            $this->entityManager->flush();
             $this->addFlash('success', 'Produit mis à jour avec succès');
             return $this->redirectToRoute('a_commander_show', ['id' => $liste_id]);
         }
@@ -131,7 +162,7 @@ class ACommanderController extends AbstractController
         return $this->render('a_commander/edit_produit.html.twig', [
             'form' => $form->createView(),
             'liste_id' => $liste_id,
-            'produit' => $aCommander
+            'ligne' => $ligne
         ]);
     }
 
@@ -174,37 +205,17 @@ class ACommanderController extends AbstractController
         return $this->redirectToRoute('a_commander_index');
     }
 
-    #[Route('/{id}', name: 'a_commander_show', methods: ['GET'])]
-    public function show(Request $request, int $id): Response
-    {
-        $sortField = $request->query->get('sort', 'p.nom');
-        $sortOrder = $request->query->get('direction', 'asc');
-
-        $liste = $this->aCommanderService->getListe($id);
-        if (!$liste) {
-            throw $this->createNotFoundException('Liste non trouvée');
-        }
-
-        $produits = $this->aCommanderService->getProduitsListe($id, $sortField, $sortOrder);
-
-        return $this->render('a_commander/show.html.twig', [
-            'liste' => $liste,
-            'produits' => $produits,
-            'sortField' => $sortField,
-            'sortOrder' => $sortOrder
-        ]);
-    }
-
     #[Route('/{liste_id}/produit/{produit_id}/delete', name: 'a_commander_delete_produit', methods: ['POST'])]
     public function deleteProduit(Request $request, int $liste_id, int $produit_id): Response
     {
-        $aCommander = $this->aCommanderService->getProduitFromListe($liste_id, $produit_id);
-        if (!$aCommander) {
+        $ligne = $this->aCommanderService->getProduitFromListe($liste_id, $produit_id);
+        if (!$ligne) {
             throw $this->createNotFoundException('Produit non trouvé dans la liste');
         }
 
         if ($this->isCsrfTokenValid('delete_produit'.$produit_id, $request->request->get('_token'))) {
-            $this->aCommanderService->deleteACommander($aCommander);
+            $this->entityManager->remove($ligne);
+            $this->entityManager->flush();
             $this->addFlash('success', 'Produit supprimé avec succès');
         }
 

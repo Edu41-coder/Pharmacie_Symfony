@@ -1,0 +1,26 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_dashboard') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route != 'tva_show' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('tva_show') }}" class="text-decoration-none">
+                    <i class="fas fa-percent"></i> TVA
+                </a>
+            </li>
+        {% else %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-percent"></i> TVA
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'tva_edit' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier le taux de TVA
+            </li>
+        {% endif %}
+    </ol>
+</nav>

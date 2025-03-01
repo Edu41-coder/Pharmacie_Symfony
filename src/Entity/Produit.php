@@ -139,4 +139,4 @@ class Produit
         $this->isDeleted = $isDeleted;
         return $this;
     }
-} 
+}

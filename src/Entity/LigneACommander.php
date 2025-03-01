@@ -61,4 +61,13 @@ class LigneACommander
         $this->quantite = $quantite;
         return $this;
     }
+
+    public function __toString(): string
+    {
+        return sprintf('Ligne %d - Produit: %s, Quantité: %d', 
+            $this->id, 
+            $this->produit ? $this->produit->getNom() : 'N/A', 
+            $this->quantite
+        );
+    }
 } 

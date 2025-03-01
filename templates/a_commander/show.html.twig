@@ -1,21 +1,22 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Contenu de la liste #{{ liste.id }}{% endblock %}
+{% block title %}Détails de la liste à commander{% endblock %}
 
 {% block body %}
-    {% include 'partials/_breadcrumb_a_commander.html.twig' with {'current_route': app.request.attributes.get('_route')} %}
+    {% include 'partials/_breadcrumb_a_commander.html.twig' with {
+        'current_route': app.request.attributes.get('_route'),
+        'liste_id': liste.id
+    } %}
 
     <div class="container-fluid">
-        <div class="d-flex justify-content-between align-items-center mb-4">
-            <h1 class="h2">Liste #{{ liste.id }}</h1>
-            <a href="{{ path('a_commander_index') }}" class="btn btn-secondary">
-                <i class="fas fa-arrow-left"></i> Retour aux listes
-            </a>
-        </div>
-
         <div class="card">
-            <div class="card-header">
-                <h2 class="h5 mb-0">Produits à commander</h2>
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h1 class="h3 mb-0">Liste à commander #{{ liste.id }} ({{ liste.createdAt|date('d/m/Y H:i') }})</h1>
+                <div class="btn-group">
+                    <a href="{{ path('a_commander_index') }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                </div>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -23,8 +24,8 @@
                         <thead>
                             <tr>
                                 <th>
-                                    <a href="{{ path('a_commander_show', {id: liste.id, sort: 'p.nom', direction: sortField == 'p.nom' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-decoration-none text-dark">
-                                        Nom du produit
+                                    <a href="{{ path('a_commander_show', {'id': liste.id, 'sort': 'p.nom', 'direction': sortField == 'p.nom' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                        Produit
                                         {% if sortField == 'p.nom' %}
                                             <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
                                         {% else %}
@@ -32,38 +33,75 @@
                                         {% endif %}
                                     </a>
                                 </th>
-                                <th>Quantité</th>
+                                <th>
+                                    <a href="{{ path('a_commander_show', {'id': liste.id, 'sort': 'l.quantite', 'direction': sortField == 'l.quantite' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                        Quantité
+                                        {% if sortField == 'l.quantite' %}
+                                            <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
                                 <th>Actions</th>
                             </tr>
                         </thead>
                         <tbody>
-                            {% for produit in produits %}
+                            {% for ligne in lignes %}
                                 <tr>
-                                    <td>{{ produit.produit.nom }}</td>
-                                    <td>{{ produit.quantite }}</td>
+                                    <td>{{ ligne.produit.nom }}</td>
+                                    <td>{{ ligne.quantite }}</td>
                                     <td>
-                                        <a href="{{ path('a_commander_edit_produit', {
-                                            liste_id: liste.id,
-                                            produit_id: produit.id
-                                        }) }}" class="btn btn-sm btn-primary">
-                                            <i class="fas fa-edit"></i> Modifier
-                                        </a>
-                                        <form action="{{ path('a_commander_delete_produit', {
-                                            liste_id: liste.id,
-                                            produit_id: produit.id
-                                        }) }}" method="post" class="d-inline-block" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer ce produit de la liste ?')">
-                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_produit' ~ produit.id) }}">
-                                            <button type="submit" class="btn btn-sm btn-danger">
-                                                <i class="fas fa-trash"></i> Supprimer
+                                        <div class="btn-group">
+                                            <a href="{{ path('a_commander_edit_produit', {'liste_id': liste.id, 'produit_id': ligne.produit.id}) }}" 
+                                               class="btn btn-sm btn-outline-primary" 
+                                               title="Modifier">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <button type="button" 
+                                                    class="btn btn-sm btn-outline-danger" 
+                                                    title="Supprimer"
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#deleteModal{{ ligne.produit.id }}">
+                                                <i class="fas fa-trash"></i>
                                             </button>
-                                        </form>
+                                        </div>
+
+                                        <!-- Modal de suppression -->
+                                        <div class="modal fade" id="deleteModal{{ ligne.produit.id }}" tabindex="-1" aria-labelledby="deleteModalLabel{{ ligne.produit.id }}" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <h5 class="modal-title" id="deleteModalLabel{{ ligne.produit.id }}">Confirmation de suppression</h5>
+                                                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                                                    </div>
+                                                    <div class="modal-body">
+                                                        Êtes-vous sûr de vouloir supprimer le produit "{{ ligne.produit.nom }}" de la liste ?
+                                                    </div>
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                                        <form method="post" action="{{ path('a_commander_delete_produit', {'liste_id': liste.id, 'produit_id': ligne.produit.id}) }}" style="display:inline-block;">
+                                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_produit' ~ ligne.produit.id) }}">
+                                                            <button type="submit" class="btn btn-danger">Supprimer</button>
+                                                        </form>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
                                     </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="3" class="text-center">Aucun produit dans cette liste</td>
                                 </tr>
                             {% endfor %}
                         </tbody>
                     </table>
                 </div>
+                <div class="mt-4">
+                    {{ knp_pagination_render(lignes, 'pagination/custom_pagination.html.twig') }}
+                </div>
             </div>
         </div>
     </div>
-{% endblock %} 
+{% endblock %}

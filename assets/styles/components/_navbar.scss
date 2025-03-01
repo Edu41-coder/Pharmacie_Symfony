@@ -404,10 +404,10 @@
 }
 
 .logout-item-desktop, .logout-item-mobile {
-    list-style: none !important; // Supprime le point noir
+    list-style: none !important;
     
     .logout-button {
-        color: white !important; // Force la couleur du texte en blanc
+        color: white !important;
         padding: 0.4rem 0.8rem !important;
         font-size: 0.9rem !important;
         background-color: rgba(255, 255, 255, 0.1) !important;
@@ -416,23 +416,25 @@
         align-items: center !important;
         gap: 0.4rem !important;
         text-decoration: none !important;
+        transition: all 0.3s ease !important;
         
         i {
             font-size: 0.9rem;
-            color: white !important; // Force la couleur de l'icône en blanc
+            color: white !important;
         }
 
-        &:hover {
-            background-color: rgba(255, 255, 255, 0.2) !important;
-            color: white !important; // Maintient la couleur blanche au survol
-        }
+       
+       
+       
+       
+       
     }
 }
 
 .logout-item-desktop {
     position: absolute !important;
-    right: -210px !important;
-    top: 50px !important;
+    right: -255px !important;
+    top: 65px !important;
 }
 
 .logout-item-mobile {

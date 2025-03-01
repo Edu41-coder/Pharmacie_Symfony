@@ -16,21 +16,15 @@ class ACommander
     #[ORM\Column(name: 'a_commander_id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\ManyToOne(targetEntity: Produit::class)]
-    #[ORM\JoinColumn(name: 'produit_id', referencedColumnName: 'produit_id', nullable: false)]
-    private ?Produit $produit = null;
+    #[ORM\Column(name: 'created_at', type: 'datetime')]
+    private ?\DateTimeInterface $createdAt = null;
 
-    #[ORM\Column(type: 'integer')]
-    private ?int $quantite = null;
-
-    #[ORM\OneToOne(targetEntity: CreationCommander::class, mappedBy: 'aCommander')]
-    private ?CreationCommander $creationCommander = null;
-
-    #[ORM\OneToMany(targetEntity: LigneACommander::class, mappedBy: 'aCommander')]
+    #[ORM\OneToMany(targetEntity: LigneACommander::class, mappedBy: 'aCommander', cascade: ['persist'])]
     private Collection $lignes;
 
     public function __construct()
     {
+        $this->createdAt = new \DateTime();
         $this->lignes = new ArrayCollection();
     }
 
@@ -39,46 +33,38 @@ class ACommander
         return $this->id;
     }
 
-    public function getProduit(): ?Produit
-    {
-        return $this->produit;
-    }
-
-    public function setProduit(?Produit $produit): self
-    {
-        $this->produit = $produit;
-        return $this;
-    }
-
-    public function getQuantite(): ?int
-    {
-        return $this->quantite;
-    }
-
-    public function setQuantite(int $quantite): self
-    {
-        $this->quantite = $quantite;
-        return $this;
-    }
-
-    public function getCreationCommander(): ?CreationCommander
-    {
-        return $this->creationCommander;
-    }
-
-    public function setCreationCommander(?CreationCommander $creationCommander): self
-    {
-        $this->creationCommander = $creationCommander;
-        return $this;
-    }
-
     public function getCreatedAt(): ?\DateTimeInterface
     {
-        return $this->creationCommander?->getCreatedAt();
+        return $this->createdAt;
+    }
+
+    public function setCreatedAt(\DateTimeInterface $createdAt): self
+    {
+        $this->createdAt = $createdAt;
+        return $this;
     }
 
     public function getLignes(): Collection
     {
         return $this->lignes;
+    }
+
+    public function addLigne(LigneACommander $ligne): self
+    {
+        if (!$this->lignes->contains($ligne)) {
+            $this->lignes[] = $ligne;
+            $ligne->setACommander($this);
+        }
+        return $this;
+    }
+
+    public function removeLigne(LigneACommander $ligne): self
+    {
+        if ($this->lignes->removeElement($ligne)) {
+            if ($ligne->getACommander() === $this) {
+                $ligne->setACommander(null);
+            }
+        }
+        return $this;
     }
 } 

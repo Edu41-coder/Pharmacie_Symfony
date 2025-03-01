@@ -21,9 +21,18 @@
             <li class="breadcrumb-item active">
                 <i class="fas fa-plus"></i> Nouvelle liste
             </li>
-        {% elseif current_route == 'a_commander_edit' %}
+        {% elseif current_route == 'a_commander_show' %}
             <li class="breadcrumb-item active">
-                <i class="fas fa-edit"></i> Modifier la liste #{{ a_commander.id }}
+                <i class="fas fa-eye"></i> Liste #{{ liste.id }}
+            </li>
+        {% elseif current_route == 'a_commander_edit_produit' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('a_commander_show', {id: liste_id}) }}" class="text-decoration-none">
+                    <i class="fas fa-eye"></i> Liste #{{ liste_id }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier un produit
             </li>
         {% endif %}
     </ol>

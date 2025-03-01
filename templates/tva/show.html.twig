@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}TVA actuelle{% endblock %}
+
+{% block body %}
+    {% include 'partials/_breadcrumb_tva.html.twig' with {'current_route': 'tva_show'} %}
+
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card">
+                    <div class="card-header bg-primary text-white">
+                        <h2 class="mb-0"><i class="fas fa-percent"></i> Taux de TVA actuel</h2>
+                    </div>
+                    <div class="card-body">
+                        <table class="table table-hover">
+                            <tbody>
+                                <tr>
+                                    <th>Nom</th>
+                                    <td>TVA</td>
+                                </tr>
+                                <tr>
+                                    <th>Taux actuel</th>
+                                    <td>{{ tva.taux }}%</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                        <div class="text-center mt-4">
+                            <a href="{{ path('tva_edit') }}" class="btn btn-warning">
+                                <i class="fas fa-edit"></i> Modifier le taux
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

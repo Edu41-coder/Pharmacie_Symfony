@@ -16,32 +16,30 @@ class InventaireService
         private ProduitRepository $produitRepository
     ) {}
 
-    public function createInventaire(array $data): Inventaire
+    public function createInventaire(array $data): void
     {
         $inventaire = new Inventaire();
-        $this->hydrateInventaire($inventaire, $data);
+        $inventaire->setProduit($data['produit']);
+        $inventaire->setStock($data['stock']);
+        $inventaire->setLastModified(new \DateTime());
 
         $this->entityManager->persist($inventaire);
         $this->entityManager->flush();
-
-        return $inventaire;
     }
 
     public function updateInventaire(Inventaire $inventaire, array $data): void
     {
-        $this->hydrateInventaire($inventaire, $data);
+        if (isset($data['stock'])) {
+            $inventaire->setStock($data['stock']);
+        }
         $inventaire->setLastModified(new \DateTime());
+
         $this->entityManager->flush();
     }
 
     public function createSortedQuery(string $sortField, string $sortOrder): QueryBuilder
     {
-        $allowedFields = ['p.nom', 'i.stock', 'i.last_modified'];
-        $sortField = in_array($sortField, $allowedFields) ? $sortField : 'p.nom';
-        $sortOrder = strtolower($sortOrder) === 'desc' ? 'DESC' : 'ASC';
-
-        return $this->inventaireRepository->createSortedQueryBuilder($sortField, $sortOrder)
-            ->addOrderBy($sortField, $sortOrder);
+        return $this->inventaireRepository->getSortedQueryBuilder($sortField, $sortOrder);
     }
 
     private function hydrateInventaire(Inventaire $inventaire, array $data): void
@@ -57,7 +55,16 @@ class InventaireService
 
     public function getProduitsNonInventories(): array
     {
-        return $this->produitRepository->findProduitsNonInventories();
+        $qb = $this->produitRepository->createQueryBuilder('p')
+            ->where('p.isDeleted = :isDeleted')
+            ->andWhere('NOT EXISTS (
+                SELECT 1 FROM App\Entity\Inventaire i 
+                WHERE i.produit_id = p.produit_id
+            )')
+            ->setParameter('isDeleted', false)
+            ->orderBy('p.nom', 'ASC');
+
+        return $qb->getQuery()->getResult();
     }
 
     public function createInventaireComplet(): void

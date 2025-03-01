@@ -14,9 +14,9 @@
         </div>
 
         <div class="card">
-            {% if produit %}
+            {% if ligne %}
                 <div class="card-header">
-                    <h2 class="h5 mb-0">{{ produit.produit.nom }}</h2>
+                    <h2 class="h5 mb-0">{{ ligne.produit.nom }}</h2>
                 </div>
                 <div class="card-body">
                     {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}

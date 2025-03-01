@@ -10,7 +10,7 @@
                 </a>
             </div>
             <div class="col-md-8">
-                <nav class="navbar navbar-expand-lg navbar-dark" style="padding-top: 28RRRRRRRRRRRRRRRRRRRRRRRpx !important;">
+                <nav class="navbar navbar-expand-lg navbar-dark" style="padding-top: 28px !important;">
                     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#footerNav" aria-controls="footerNav" aria-expanded="false" aria-label="Toggle navigation">
                         <span class="navbar-toggler-icon"></span>
                     </button>
@@ -37,7 +37,7 @@
                             <li class="nav-item"><a class="nav-link disabled" href="#">Mes Documents</a></li>
                             {% if is_granted('ROLE_ADMIN') %}
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Comptabilité</a></li>
-                                <li class="nav-item"><a class="nav-link disabled" href="#">TVA</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ path('tva_show') }}">TVA</a></li>
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Passer Commande</a></li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ path('admin_users_index') }}">Gérer utilisateurs</a>
@@ -52,4 +52,4 @@
 </footer>
 
 {# Scripts #}
-{{ encore_entry_script_tags('app') }} 
+{{ encore_entry_script_tags('app') }}

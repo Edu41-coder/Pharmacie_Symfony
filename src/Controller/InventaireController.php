@@ -24,18 +24,25 @@ class InventaireController extends AbstractController
         private ProduitRepository $produitRepository
     ) {}
 
-    #[Route('/', name: 'inventaire_index')]
+    #[Route('/', name: 'inventaire_index', methods: ['GET'])]
     public function index(Request $request): Response
     {
         $sortField = $request->query->get('sort', 'p.nom');
         $sortOrder = $request->query->get('direction', 'asc');
-        
+
         $query = $this->inventaireService->createSortedQuery($sortField, $sortOrder);
-        
+
         $pagination = $this->paginator->paginate(
             $query->getQuery(),
             $request->query->getInt('page', 1),
-            15
+            15,
+            [
+                'defaultSortFieldName' => 'p.nom',
+                'defaultSortDirection' => 'asc',
+                'sortFieldParameterName' => 'sort',
+                'sortDirectionParameterName' => 'direction',
+                'template' => 'pagination/custom_pagination.html.twig'
+            ]
         );
 
         return $this->render('inventaire/index.html.twig', [

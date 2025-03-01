@@ -1,3 +1,28 @@
+{# Styles spécifiques pour le hover rouge #}
+<style>
+    /* Styles pour desktop */
+    @media (min-width: 769px) {
+        .logout-button-red:hover {
+            background-color: rgba(220, 53, 69, 0.8) !important;
+            transform: scale(1.05) !important;
+        }
+        .logout-button-red:hover i {
+            color: rgba(220, 53, 69, 1) !important;
+        }
+    }
+
+    /* Styles pour mobile */
+    @media (max-width: 768px) {
+        .logout-button-red:active {
+            background-color: rgba(220, 53, 69, 0.8) !important;
+            transform: scale(1.05) !important;
+        }
+        .logout-button-red:active i {
+            color: rgba(220, 53, 69, 1) !important;
+        }
+    }
+</style>
+
 <header class="header mt-auto py-3">
     <button id="toggleHeader" class="header-toggle">
         <i class="fas fa-chevron-down"></i>
@@ -13,7 +38,7 @@
                 <nav class="navbar navbar-expand-lg navbar-dark" style="padding-top: 30px !important;">
                     <!-- Bouton déconnexion pour desktop -->
                     <li class="nav-item logout-item logout-item-desktop">
-                        <a class="nav-link logout-button" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal" style="padding: 8px 16px !important; background-color: rgba(255, 255, 255, 0.1) !important; border-radius: 20px !important; display: flex !important; align-items: center !important; gap: 8px !important;">
+                        <a class="nav-link logout-button logout-button-red" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal" style="padding: 8px 16px !important; background-color: rgba(255, 255, 255, 0.1) !important; border-radius: 20px !important; display: flex !important; align-items: center !important; gap: 8px !important; transition: all 0.3s ease !important;">
                             <i class="fas fa-sign-out-alt"></i>
                             Déconnexion
                         </a>
@@ -21,7 +46,7 @@
                     
                     <!-- Bouton déconnexion pour mobile -->
                     <li class="nav-item logout-item logout-item-mobile">
-                        <a class="nav-link logout-button" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal" style="padding: 8px 16px !important; background-color: rgba(255, 255, 255, 0.1) !important; border-radius: 20px !important; display: flex !important; align-items: center !important; gap: 8px !important;">
+                        <a class="nav-link logout-button logout-button-red" href="#" data-bs-toggle="modal" data-bs-target="#logoutModal" style="padding: 8px 16px !important; background-color: rgba(255, 255, 255, 0.1) !important; border-radius: 20px !important; display: flex !important; align-items: center !important; gap: 8px !important; transition: all 0.3s ease !important;">
                             <i class="fas fa-sign-out-alt"></i>
                             Déconnexion
                         </a>
@@ -47,7 +72,7 @@
                             <li class="nav-item"><a class="nav-link disabled" href="#">Mes Documents</a></li>
                             {% if is_granted('ROLE_ADMIN') %}
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Comptabilité</a></li>
-                                <li class="nav-item"><a class="nav-link disabled" href="#">TVA</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ path('tva_show') }}">TVA</a></li>
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Passer Commande</a></li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ path('admin_users_index') }}">Gérer utilisateurs</a>
