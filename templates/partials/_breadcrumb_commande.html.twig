@@ -1,0 +1,57 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_dashboard') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route not in ['commande_index', 'commande_select_a_commander'] %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('commande_index') }}" class="text-decoration-none">
+                    <i class="fas fa-shopping-cart"></i> Commandes
+                </a>
+            </li>
+        {% elseif current_route == 'commande_index' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-shopping-cart"></i> Commandes
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'commande_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus"></i> Nouvelle commande
+            </li>
+        {% elseif current_route == 'commande_show' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-eye"></i> Commande #{{ commande.id }}
+            </li>
+        {% elseif current_route == 'commande_add_produit' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('commande_show', {id: commande.id}) }}" class="text-decoration-none">
+                    <i class="fas fa-eye"></i> Commande #{{ commande.id }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus"></i> Ajouter un produit
+            </li>
+        {% elseif current_route == 'commande_edit_produit' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('commande_show', {id: commande_id is defined ? commande_id : commande.id}) }}" class="text-decoration-none">
+                    <i class="fas fa-eye"></i> Commande #{{ commande_id is defined ? commande_id : commande.id }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier {{ produit_nom is defined ? produit_nom : 'un produit' }}
+            </li>
+        {% elseif current_route == 'commande_select_a_commander' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('commande_index') }}" class="text-decoration-none">
+                    <i class="fas fa-shopping-cart"></i> Commandes
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-file-import"></i> Sélectionner une liste
+            </li>
+        {% endif %}
+    </ol>
+</nav>

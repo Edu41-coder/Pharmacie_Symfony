@@ -92,4 +92,24 @@ class ProduitRepository extends ServiceEntityRepository
 
         return $qb->getQuery()->getResult();
     }
-} 
+
+    /**
+     * Trouve les produits qui n'ont pas d'inventaire
+     */
+    public function findProduitsWithoutInventaire(array $produitsAvecInventaire): array
+    {
+        $qb = $this->createQueryBuilder('p')
+            ->where('p.isDeleted = :isDeleted')
+            ->setParameter('isDeleted', false);
+            
+        // Si on a des produits avec inventaire, on les exclut
+        if (!empty($produitsAvecInventaire)) {
+            $qb->andWhere('p.id NOT IN (:inventaireIds)')
+               ->setParameter('inventaireIds', $produitsAvecInventaire);
+        }
+        
+        $qb->orderBy('p.nom', 'ASC');
+        
+        return $qb->getQuery()->getResult();
+    }
+}

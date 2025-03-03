@@ -11,17 +11,33 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Validator\Constraints\NotBlank;
 use Symfony\Component\Validator\Constraints\GreaterThanOrEqual;
+use Doctrine\ORM\EntityRepository;
 
 class ACommanderType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        $excludeProduits = $options['exclude_produits'] ?? [];
+
         $builder
             ->add('produit', EntityType::class, [
                 'class' => Produit::class,
                 'choice_label' => 'nom',
                 'placeholder' => 'Sélectionner un produit',
                 'required' => true,
+                'query_builder' => function (EntityRepository $er) use ($excludeProduits) {
+                    $qb = $er->createQueryBuilder('p')
+                        ->where('p.isDeleted = :isDeleted')
+                        ->setParameter('isDeleted', false)
+                        ->orderBy('p.nom', 'ASC');
+                    
+                    if (!empty($excludeProduits)) {
+                        $qb->andWhere('p.id NOT IN (:ids)')
+                           ->setParameter('ids', $excludeProduits);
+                    }
+                    
+                    return $qb;
+                },
                 'constraints' => [
                     new NotBlank([
                         'message' => 'Veuillez sélectionner un produit'
@@ -48,8 +64,12 @@ class ACommanderType extends AbstractType
                     ])
                 ],
                 'label' => 'Quantité à commander'
-            ])
-        ;
+            ]);
+
+        if ($options['edit_mode']) {
+            // En mode édition, on désactive la sélection du produit
+            $builder->get('produit')->setDisabled(true);
+        }
     }
 
     public function configureOptions(OptionsResolver $resolver): void
@@ -57,6 +77,7 @@ class ACommanderType extends AbstractType
         $resolver->setDefaults([
             'data_class' => LigneACommander::class,
             'edit_mode' => false,
+            'exclude_produits' => []
         ]);
     }
 }

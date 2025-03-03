@@ -23,7 +23,7 @@
                                     Déconnexion
                                 </a>
                             </li>
-                            <li class="nav-item"><a class="nav-link disabled" href="#">Ventes</a></li>
+                            <li class="nav-item"><a class="nav-link" href="{{ path('ventes_index') }}">Ventes</a></li>
                             <li class="nav-item">
                                 <a class="nav-link" href="{{ path('produits_index') }}">Produits</a>
                             </li>
@@ -38,7 +38,7 @@
                             {% if is_granted('ROLE_ADMIN') %}
                                 <li class="nav-item"><a class="nav-link disabled" href="#">Comptabilité</a></li>
                                 <li class="nav-item"><a class="nav-link" href="{{ path('tva_show') }}">TVA</a></li>
-                                <li class="nav-item"><a class="nav-link disabled" href="#">Passer Commande</a></li>
+                                <li class="nav-item"><a class="nav-link" href="{{ path('commande_index') }}">Passer Commande</a></li>
                                 <li class="nav-item">
                                     <a class="nav-link" href="{{ path('admin_users_index') }}">Gérer utilisateurs</a>
                                 </li>

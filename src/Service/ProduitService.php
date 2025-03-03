@@ -36,9 +36,50 @@ class ProduitService
         $this->produitRepository->softDelete($produit);
     }
 
+    /**
+     * Trouve tous les produits
+     * @return Produit[]
+     */
     public function findAll(): array
     {
-        return $this->produitRepository->findAllActive();
+        return $this->produitRepository->findBy(['isDeleted' => false], ['nom' => 'ASC']);
+    }
+
+    /**
+     * Recherche un produit par term (nom)
+     * @param string $term
+     * @return Produit[]
+     */
+    public function searchByTerm(string $term): array
+    {
+        return $this->produitRepository->createQueryBuilder('p')
+            ->where('p.nom LIKE :term')
+            ->setParameter('term', '%' . $term . '%')
+            ->andWhere('p.isDeleted = :deleted')
+            ->setParameter('deleted', false)
+            ->orderBy('p.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function save(Produit $produit, bool $flush = true): void
+    {
+        $this->entityManager->persist($produit);
+        
+        if ($flush) {
+            $this->entityManager->flush();
+        }
+    }
+
+    public function delete(Produit $produit): void
+    {
+        $produit->setIsDeleted(true);
+        $this->entityManager->flush();
+    }
+
+    public function getProduitById(int $id): ?Produit
+    {
+        return $this->produitRepository->find($id);
     }
 
     public function findByNom(string $nom): array
@@ -88,4 +129,4 @@ class ProduitService
             $produit->setDeclencherAlerte($data['declencherAlerte']);
         }
     }
-} 
+}

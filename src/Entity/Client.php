@@ -3,6 +3,8 @@
 namespace App\Entity;
 
 use App\Repository\ClientRepository;
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 use Symfony\Component\Validator\Context\ExecutionContextInterface;
@@ -51,6 +53,14 @@ class Client
 
     #[ORM\Column]
     private bool $cheques_impayes = false;
+
+    #[ORM\OneToMany(mappedBy: 'client', targetEntity: Cheque::class)]
+    private Collection $cheques;
+
+    public function __construct()
+    {
+        $this->cheques = new ArrayCollection();
+    }
 
     // Getters et Setters
     public function getId(): ?int
@@ -174,4 +184,4 @@ class Client
             'cheques_impayes' => $this->cheques_impayes,
         ];
     }
-} 
+}

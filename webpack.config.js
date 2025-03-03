@@ -10,6 +10,7 @@ Encore
     .addEntry('app', './assets/app.js')
     .addEntry('produits', './assets/js/pages/produits/index.js')
     .addEntry('inventaire', './assets/js/pages/inventaire/inventaire.js')
+    .addEntry('ventes', './assets/js/ventes.js')
     .enableStimulusBridge('./assets/controllers.json')
     .splitEntryChunks()
     .enableSingleRuntimeChunk()

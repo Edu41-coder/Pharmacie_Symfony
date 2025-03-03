@@ -3,11 +3,15 @@ parameters:
     app.name: 'Pharmacie App'
 
 services:
+    # default configuration for services in *this* file
     _defaults:
-        autowire: true
-        autoconfigure: true
-        public: false
+        autowire: true      # Automatically injects dependencies in your services.
+        autoconfigure: true # Automatically registers your services as commands, event subscribers, etc.
+        public: false       # Allows optimizing the container by removing unused services; this also means
+                            # fetching services directly from the container via $container->get() won't work.
 
+    # makes classes in src/ available to be used as services
+    # this creates a service per class whose id is the fully-qualified class name
     App\:
         resource: '../src/'
         exclude:
@@ -15,8 +19,10 @@ services:
             - '../src/Entity/'
             - '../src/Kernel.php'
 
+    # controllers are imported separately to make sure services can be injected
+    # as action arguments even if you don't extend any base controller class
     App\Controller\:
-        resource: '../src/Controller'
+        resource: '../src/Controller/'
         tags: ['controller.service_arguments']
 
     App\Service\AuthService:
@@ -81,6 +87,10 @@ services:
             $security: '@security.helper'
             $urlGenerator: '@router'
         tags: ['security.authentication.success_handler']
+
+    App\Service\OrdonnanceService:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
 
     form.factory:
         class: Symfony\Component\Form\FormFactory

@@ -15,38 +15,35 @@ class Produit
     #[ORM\Column(name: 'produit_id', type: 'integer')]
     private ?int $id = null;
 
-    #[ORM\Column(type: 'string', length: 100)]
-    #[Assert\NotBlank(message: 'Le nom est requis')]
-    #[Assert\Length(max: 100)]
+    #[ORM\Column(name: 'nom', type: 'string', length: 100)]
+    #[Assert\NotBlank(message: 'Le nom ne peut pas être vide')]
+    #[Assert\Length(max: 100, maxMessage: 'Le nom ne peut pas dépasser {{ limit }} caractères')]
     private ?string $nom = null;
 
-    #[ORM\Column(type: 'text', nullable: true)]
+    #[ORM\Column(name: 'description', type: 'text', nullable: true)]
     private ?string $description = null;
 
-    #[ORM\Column(name: 'prix_vente_ht', type: 'decimal', precision: 10, scale: 2)]
-    #[Assert\NotBlank]
-    #[Assert\Positive]
+    #[ORM\Column(name: 'prix_vente_ht', type: 'string')]
+    #[Assert\NotBlank(message: 'Le prix de vente HT ne peut pas être vide')]
+    #[Assert\Regex(pattern: '/^\d+(\.\d{1,2})?$/', message: 'Le prix doit être un nombre décimal valide')]
     private ?string $prixVenteHt = null;
 
-    #[ORM\Column(type: 'string', length: 3, options: ['default' => 'non'])]
-    #[Assert\Choice(choices: ['oui', 'non'])]
-    private ?string $prescription = 'non';
+    #[ORM\Column(name: 'prescription', type: 'string', length: 3, options: ['default' => 'non'])]
+    private string $prescription = 'non';
 
     #[ORM\Column(name: 'taux_remboursement', type: 'integer', nullable: true)]
-    #[Assert\Range(min: 0, max: 100)]
     private ?int $tauxRemboursement = null;
 
-    #[ORM\Column(type: 'integer', nullable: true)]
+    #[ORM\Column(name: 'alerte', type: 'integer', nullable: true)]
     private ?int $alerte = null;
 
     #[ORM\Column(name: 'declencher_alerte', type: 'string', length: 3, options: ['default' => 'non'])]
-    #[Assert\Choice(choices: ['oui', 'non'])]
-    private ?string $declencherAlerte = 'non';
+    private string $declencherAlerte = 'non';
 
     #[ORM\Column(name: 'is_deleted', type: 'boolean', options: ['default' => false])]
     private bool $isDeleted = false;
 
-    // Getters et Setters
+    // Getters and setters
     public function getId(): ?int
     {
         return $this->id;
@@ -57,7 +54,7 @@ class Produit
         return $this->nom;
     }
 
-    public function setNom(string $nom): self
+    public function setNom(?string $nom): self
     {
         $this->nom = $nom;
         return $this;
@@ -79,7 +76,7 @@ class Produit
         return $this->prixVenteHt;
     }
 
-    public function setPrixVenteHt(string $prixVenteHt): self
+    public function setPrixVenteHt(?string $prixVenteHt): self
     {
         $this->prixVenteHt = $prixVenteHt;
         return $this;
@@ -129,7 +126,7 @@ class Produit
         return $this;
     }
 
-    public function isDeleted(): bool
+    public function isIsDeleted(): bool
     {
         return $this->isDeleted;
     }

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\ACommander;
 use App\Entity\LigneACommander;
 use App\Form\ACommanderType;
+use App\Form\LigneACommanderType;
 use App\Service\ACommanderService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -221,4 +222,60 @@ class ACommanderController extends AbstractController
 
         return $this->redirectToRoute('a_commander_show', ['id' => $liste_id]);
     }
-} 
+
+    #[Route('/{id}/add-produit', name: 'a_commander_add_produit', methods: ['GET', 'POST'])]
+    public function addProduit(Request $request, int $id): Response
+    {
+        $liste = $this->aCommanderService->getListe($id);
+        if (!$liste) {
+            throw $this->createNotFoundException('Liste non trouvée');
+        }
+
+        // Créer une nouvelle ligne pour la liste
+        $ligneProduit = new LigneACommander();
+        $ligneProduit->setACommander($liste);
+
+        // Créer le formulaire (similaire à ACommanderType mais sans le champ aCommander)
+        $form = $this->createForm(ACommanderType::class, $ligneProduit, [
+            'exclude_produits' => $this->getProduitsDejaPresents($liste)
+        ]);
+        
+        $form->handleRequest($request);
+
+        if ($form->isSubmitted() && $form->isValid()) {
+            // Vérifier si le produit n'est pas déjà présent dans la liste
+            $produitExistant = $this->aCommanderService->getProduitFromListe($id, $ligneProduit->getProduit()->getId());
+            
+            if ($produitExistant) {
+                // Si le produit existe déjà, on augmente la quantité
+                $produitExistant->setQuantite($produitExistant->getQuantite() + $ligneProduit->getQuantite());
+                $this->entityManager->flush();
+                $this->addFlash('info', 'La quantité du produit a été mise à jour');
+            } else {
+                // Sinon on ajoute le nouveau produit
+                $this->entityManager->persist($ligneProduit);
+                $this->entityManager->flush();
+                $this->addFlash('success', 'Produit ajouté avec succès à la liste');
+            }
+            
+            return $this->redirectToRoute('a_commander_show', ['id' => $id]);
+        }
+
+        return $this->render('a_commander/add_produit.html.twig', [
+            'form' => $form->createView(),
+            'liste' => $liste
+        ]);
+    }
+    
+    /**
+     * Récupère la liste des IDs des produits déjà présents dans la liste
+     */
+    private function getProduitsDejaPresents(ACommander $liste): array
+    {
+        $produits = [];
+        foreach ($liste->getLignes() as $ligne) {
+            $produits[] = $ligne->getProduit()->getId();
+        }
+        return $produits;
+    }
+}

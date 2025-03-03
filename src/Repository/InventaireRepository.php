@@ -39,12 +39,37 @@ class InventaireRepository extends ServiceEntityRepository
 
     public function getSortedQueryBuilder(string $sortField, string $sortOrder): QueryBuilder
     {
-        $allowedFields = ['p.nom', 'i.stock', 'i.last_modified'];
+        $allowedFields = ['p.nom', 'i.stock', 'i.lastModified', 'p.alerte', 'p.declencherAlerte'];
         $sortField = in_array($sortField, $allowedFields) ? $sortField : 'p.nom';
         $sortOrder = strtoupper($sortOrder) === 'DESC' ? 'DESC' : 'ASC';
 
         return $this->createBaseQueryBuilder()
             ->orderBy($sortField, $sortOrder);
+    }
+
+    /**
+     * Récupère tous les IDs des produits qui ont un inventaire
+     */
+    public function findAllProductIds(): array
+    {
+        $results = $this->createQueryBuilder('i')
+            ->select('p.id as produitId')
+            ->join('i.produit', 'p')
+            ->getQuery()
+            ->getScalarResult();
+        
+        return array_column($results, 'produitId');
+    }
+
+    public function findOneWithProduct(int $id): ?Inventaire
+    {
+        return $this->createQueryBuilder('i')
+            ->select('i', 'p')
+            ->join('i.produit', 'p')
+            ->where('p.id = :id')
+            ->setParameter('id', $id)
+            ->getQuery()
+            ->getOneOrNullResult();
     }
 
     public function findLowStock(): array
@@ -59,4 +84,4 @@ class InventaireRepository extends ServiceEntityRepository
             ->getQuery()
             ->getResult();
     }
-} 
+}

@@ -3,6 +3,7 @@
 namespace App\Service;
 
 use App\Entity\Inventaire;
+use App\Entity\Produit;
 use App\Repository\InventaireRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Doctrine\ORM\QueryBuilder;
@@ -85,4 +86,53 @@ class InventaireService
         $this->entityManager->remove($inventaire);
         $this->entityManager->flush();
     }
-} 
+
+    /**
+     * Trouve l'inventaire par produit
+     * @param Produit $produit
+     * @return Inventaire|null
+     */
+    public function findByProduit(Produit $produit): ?Inventaire
+    {
+        return $this->inventaireRepository->findOneBy(['produit' => $produit]);
+    }
+
+    /**
+     * Mettre à jour le stock d'un produit
+     * @param Produit $produit
+     * @param int $quantite (peut être négatif pour un retrait)
+     */
+    public function updateStock(Produit $produit, int $quantite): void
+    {
+        $inventaire = $this->findByProduit($produit);
+        
+        if (!$inventaire) {
+            $inventaire = new Inventaire();
+            $inventaire->setProduit($produit);
+            $inventaire->setStock(max(0, $quantite)); // Au moins 0
+            $this->entityManager->persist($inventaire);
+        } else {
+            $nouveauStock = $inventaire->getStock() + $quantite;
+            $inventaire->setStock(max(0, $nouveauStock)); // Éviter stock négatif
+        }
+        
+        $this->entityManager->flush();
+    }
+
+    /**
+     * Vérifie si un produit est disponible en stock
+     * @param Produit $produit
+     * @param int $quantite
+     * @return bool
+     */
+    public function estDisponible(Produit $produit, int $quantite): bool
+    {
+        $inventaire = $this->findByProduit($produit);
+        
+        if (!$inventaire) {
+            return false;
+        }
+        
+        return $inventaire->getStock() >= $quantite;
+    }
+}

@@ -1,0 +1,59 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un produit à la liste{% endblock %}
+
+{% block body %}
+    {% include 'partials/_breadcrumb_a_commander.html.twig' with {
+        'current_route': 'a_commander_add_produit',
+        'liste_id': liste.id
+    } %}
+
+    <div class="container-fluid">
+        <div class="card">
+            <div class="card-header">
+                <h1 class="h3 mb-0">Ajouter un produit à la liste #{{ liste.id }}</h1>
+            </div>
+            <div class="card-body">
+                {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                    <div class="row">
+                        <div class="col-md-6">
+                            {{ form_row(form.produit) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.quantite) }}
+                        </div>
+                    </div>
+
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="{{ path('a_commander_show', {'id': liste.id}) }}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i> Retour
+                        </a>
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-plus"></i> Ajouter
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Validation du formulaire côté client
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+{% endblock %}

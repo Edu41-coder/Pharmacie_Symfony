@@ -68,4 +68,52 @@ class ClientService
     {
         return $this->clientRepository->createSortedQueryBuilder($sortField, $sortOrder);
     }
-} 
+
+    /**
+     * Trouve tous les clients (sans filtrage par isActive puisque ce champ n'existe pas)
+     * @return Client[]
+     */
+    public function findAllActive(): array
+    {
+        // Modification pour retourner tous les clients au lieu de filtrer par isActive
+        return $this->clientRepository->findBy([], ['nom' => 'ASC']);
+    }
+
+    /**
+     * Recherche un client par term (nom ou prénom)
+     * @param string $term
+     * @return Client[]
+     */
+    public function searchByTerm(string $term): array
+    {
+        return $this->clientRepository->createQueryBuilder('c')
+            ->where('c.nom LIKE :term OR c.prenom LIKE :term')
+            ->setParameter('term', '%' . $term . '%')
+            // Suppression du filtre sur isActive
+            ->orderBy('c.nom', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    public function save(Client $client, bool $flush = true): void
+    {
+        $this->entityManager->persist($client);
+        
+        if ($flush) {
+            $this->entityManager->flush();
+        }
+    }
+
+    // Modification de la méthode delete pour ne pas utiliser isActive
+    public function delete(Client $client): void
+    {
+        // Suppression complète du client au lieu de le désactiver
+        $this->entityManager->remove($client);
+        $this->entityManager->flush();
+    }
+
+    public function getClientById(int $id): ?Client
+    {
+        return $this->clientRepository->find($id);
+    }
+}

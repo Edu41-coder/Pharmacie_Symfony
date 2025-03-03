@@ -1,0 +1,58 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ajouter un produit à la commande{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    {% include 'partials/_breadcrumb_commande.html.twig' with {'current_route': 'commande_add_produit', 'commande': commande} %}
+    
+    <h1>Ajouter un produit à la commande #{{ commande.id }}</h1>
+    
+    <div class="card">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Sélection du produit</h2>
+        </div>
+        <div class="card-body">
+            {{ form_start(form, {'attr': {'class': 'needs-validation', 'novalidate': 'novalidate'}}) }}
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        {{ form_row(form.produit, {'label': 'Produit', 'attr': {'class': 'form-select'}}) }}
+                    </div>
+                    <div class="col-md-6">
+                        {{ form_row(form.quantite, {'label': 'Quantité', 'attr': {'class': 'form-control', 'min': 1}}) }}
+                    </div>
+                </div>
+                
+                <div class="d-flex justify-content-between">
+                    <a href="{{ path('commande_show', {'id': commande.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> Retour
+                    </a>
+                    <button type="submit" class="btn btn-success">
+                        <i class="fas fa-plus"></i> Ajouter
+                    </button>
+                </div>
+            {{ form_end(form) }}
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Validation du formulaire côté client
+        (function () {
+            'use strict'
+            var forms = document.querySelectorAll('.needs-validation')
+            Array.prototype.slice.call(forms).forEach(function (form) {
+                form.addEventListener('submit', function (event) {
+                    if (!form.checkValidity()) {
+                        event.preventDefault()
+                        event.stopPropagation()
+                    }
+                    form.classList.add('was-validated')
+                }, false)
+            })
+        })()
+    </script>
+{% endblock %}

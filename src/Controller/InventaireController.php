@@ -41,7 +41,8 @@ class InventaireController extends AbstractController
                 'defaultSortDirection' => 'asc',
                 'sortFieldParameterName' => 'sort',
                 'sortDirectionParameterName' => 'direction',
-                'template' => 'pagination/custom_pagination.html.twig'
+                'template' => 'pagination/custom_pagination.html.twig',
+                'useOutputWalkers' => true
             ]
         );
 
@@ -135,4 +136,4 @@ class InventaireController extends AbstractController
         $this->addFlash('success', 'Inventaire supprimé avec succès');
         return $this->redirectToRoute('inventaire_index');
     }
-} 
+}

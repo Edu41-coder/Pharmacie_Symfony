@@ -75,12 +75,30 @@
                                     {% endif %}
                                 </a>
                             </th>
-                            <th>Seuil d'alerte</th>
-                            <th>État alerte</th>
                             <th>
-                                <a href="{{ path('inventaire_index', {'sort': 'i.last_modified', 'direction': sortField == 'i.last_modified' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                <a href="{{ path('inventaire_index', {'sort': 'p.alerte', 'direction': sortField == 'p.alerte' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Seuil d'alerte
+                                    {% if sortField == 'p.alerte' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('inventaire_index', {'sort': 'p.declencherAlerte', 'direction': sortField == 'p.declencherAlerte' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    État alerte
+                                    {% if sortField == 'p.declencherAlerte' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('inventaire_index', {'sort': 'i.lastModified', 'direction': sortField == 'i.lastModified' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
                                     Dernière modification
-                                    {% if sortField == 'i.last_modified' %}
+                                    {% if sortField == 'i.lastModified' %}
                                         <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
                                     {% else %}
                                         <i class="fas fa-sort"></i>
@@ -163,7 +181,7 @@
                             </div>
                         {% else %}
                             <tr>
-                                <td colspan="4" class="text-center">Aucun inventaire trouvé</td>
+                                <td colspan="6" class="text-center">Aucun inventaire trouvé</td>
                             </tr>
                         {% endfor %}
                     </tbody>
@@ -172,4 +190,13 @@
         </div>
     </div>
 </div>
-{% endblock %} 
+{% endblock %}
+
+{# Définir un bloc 'pagination' en dehors du bloc 'content' pour être utilisé par le template parent #}
+{% block pagination %}
+    <div class="container">
+        <div class="d-flex justify-content-center my-4">
+            {{ knp_pagination_render(pagination, 'pagination/custom_pagination.html.twig') }}
+        </div>
+    </div>
+{% endblock %}

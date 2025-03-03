@@ -1,0 +1,189 @@
+{# filepath: /c:/xampp/htdocs/Pharmacie/templates/ventes/index.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Liste des ventes{% endblock %}
+
+{% block stylesheets %}
+    {{ parent() }}
+    <style>
+        .th-sort-asc::after {
+            content: " \25B2";
+        }
+        .th-sort-desc::after {
+            content: " \25BC";
+        }
+        th[data-sort] {
+            cursor: pointer;
+        }
+    </style>
+{% endblock %}
+
+{% block body %}
+    <div class="container">
+        {% set current_route = app.request.attributes.get('_route') %}
+        {% include 'partials/_ventes_breadcrumb.html.twig' with {'current_route': current_route} %}
+        
+        <div class="row mb-4 d-flex justify-content-between align-items-center">
+            <div class="col-md-6">
+                <h1>Liste des ventes</h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{{ path('ventes_new') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Nouvelle vente
+                </a>
+            </div>
+        </div>
+
+        {% for message in app.flashes('success') %}
+            <div class="alert alert-success">
+                {{ message }}
+            </div>
+        {% endfor %}
+        
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Filtres</h5>
+            </div>
+            <div class="card-body">
+                <form method="GET" class="row g-3">
+                    <div class="col-md-4">
+                        <label for="date_debut" class="form-label">Date début</label>
+                        <input type="date" name="date_debut" id="date_debut" class="form-control" value="{{ dateDebut }}">
+                    </div>
+                    <div class="col-md-4">
+                        <label for="date_fin" class="form-label">Date fin</label>
+                        <input type="date" name="date_fin" id="date_fin" class="form-control" value="{{ dateFin }}">
+                    </div>
+                    <div class="col-md-4 d-flex align-items-end">
+                        <button type="submit" class="btn btn-primary me-2">Filtrer</button>
+                        <a href="{{ path('ventes_index') }}" class="btn btn-secondary">Réinitialiser</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover" id="ventes-table">
+                        <thead>
+                            <tr>
+                                <th data-sort="vente_id">ID</th>
+                                <th data-sort="client">Client</th>
+                                <th data-sort="date">Date</th>
+                                <th data-sort="montant">Montant</th>
+                                <th data-sort="montant_regle">Montant réglé</th>
+                                <th data-sort="a_rembourser">À rembourser</th>
+                                <th>Mode de paiement</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for vente in pagination %}
+                                <tr>
+                                    <td>{{ vente.id }}</td>
+                                    <td>
+                                        {% if vente.client %}
+                                            {{ vente.client.nom }} {{ vente.client.prenom }}
+                                        {% else %}
+                                            Client de passage
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ vente.date|date('d/m/Y H:i') }}</td>
+                                    <td>{{ vente.montant|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ vente.montantRegle|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ vente.aRembourser|number_format(2, ',', ' ') }} €</td>
+                                    <td>
+                                        {% for paiement in vente.ventePaiements %}
+                                            {% if paiement.modePaiement == 'especes' %}
+                                                <span class="badge bg-primary">Espèces</span>
+                                            {% elseif paiement.modePaiement == 'carte_bleu' %}
+                                                <span class="badge bg-info">Carte Bancaire</span>
+                                            {% elseif paiement.modePaiement == 'cheque' %}
+                                                <span class="badge bg-warning">Chèque</span>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </td>
+                                    <td>
+                                        <div class="btn-group btn-group-sm">
+                                            <a href="{{ path('ventes_show', {'id': vente.id}) }}" class="btn btn-info">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            {% if is_granted('ROLE_ADMIN') %}
+                                                <a href="{{ path('ventes_edit', {'id': vente.id}) }}" class="btn btn-primary">
+                                                    <i class="fas fa-edit"></i>
+                                                </a>
+                                                <form method="post" action="{{ path('ventes_delete', {'id': vente.id}) }}" onsubmit="return confirm('Êtes-vous sûr de vouloir supprimer cette vente?');" style="display: inline;">
+                                                    <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vente.id) }}">
+                                                    <button type="submit" class="btn btn-danger">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </form>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                            {% else %}
+                                <tr>
+                                    <td colspan="8" class="text-center">Aucune vente trouvée</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="navigation d-flex justify-content-center">
+                    {{ knp_pagination_render(pagination) }}
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const table = document.getElementById('ventes-table');
+            const headers = table.querySelectorAll('th[data-sort]');
+            
+            // Récupérer les paramètres de tri actuels de l'URL
+            const urlParams = new URLSearchParams(window.location.search);
+            const currentSort = urlParams.get('sort') || 'date';
+            const currentDirection = urlParams.get('direction') || 'desc';
+            
+            // Appliquer les classes de tri aux en-têtes
+            headers.forEach(header => {
+                const sortColumn = header.dataset.sort;
+                if (sortColumn === currentSort) {
+                    header.classList.add(`th-sort-${currentDirection}`);
+                }
+            });
+            
+            // Ajouter les écouteurs d'événements pour le tri
+            headers.forEach(header => {
+                header.addEventListener('click', function() {
+                    const sortColumn = this.dataset.sort;
+                    let newDirection = 'asc';
+                    
+                    if (sortColumn === currentSort) {
+                        newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
+                    }
+                    
+                    // Construire la nouvelle URL avec tous les paramètres existants
+                    const newUrlParams = new URLSearchParams(window.location.search);
+                    newUrlParams.set('sort', sortColumn);
+                    newUrlParams.set('direction', newDirection);
+                    
+                    // Conserver la page actuelle et les autres filtres
+                    if (!newUrlParams.has('page')) {
+                        newUrlParams.set('page', '1');
+                    }
+                    
+                    // Redirection avec la nouvelle URL
+                    window.location.href = `${window.location.pathname}?${newUrlParams.toString()}`;
+                });
+            });
+        });
+    </script>
+{% endblock %}

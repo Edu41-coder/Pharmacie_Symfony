@@ -1,0 +1,210 @@
+{# filepath: /c:/xampp/htdocs/Pharmacie/templates/ventes/show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la vente{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-md-6">
+                <h1>Détails de la vente #{{ vente.id }}</h1>
+            </div>
+            <div class="col-md-6 text-end">
+                <a href="{{ path('ventes_index') }}" class="btn btn-secondary">
+                    <i class="fas fa-arrow-left"></i> Retour à la liste
+                </a>
+                {% if is_granted('ROLE_ADMIN') %}
+                    <a href="{{ path('ventes_edit', {'id': vente.id}) }}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> Modifier
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <div class="card mb-4">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Informations générales</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th>Client:</th>
+                                    <td>
+                                        {% if vente.client %}
+                                            {{ vente.client.nom }} {{ vente.client.prenom }}
+                                        {% else %}
+                                            Client de passage
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Vendeur:</th>
+                                    <td>{{ vente.user.nom }} {{ vente.user.prenom }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Date:</th>
+                                    <td>{{ vente.date|date('d/m/Y H:i') }}</td>
+                                </tr>
+                                <tr>
+                                    <th>Commentaire:</th>
+                                    <td>{{ vente.commentaire|nl2br|default('-') }}</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <table class="table table-sm table-borderless">
+                            <tbody>
+                                <tr>
+                                    <th>Montant total:</th>
+                                    <td>{{ vente.montant|number_format(2, ',', ' ') }} €</td>
+                                </tr>
+                                <tr>
+                                    <th>Montant réglé:</th>
+                                    <td>{{ vente.montantRegle|number_format(2, ',', ' ') }} €</td>
+                                </tr>
+                                <tr>
+                                    <th>Montant à rembourser:</th>
+                                    <td>{{ vente.aRembourser|number_format(2, ',', ' ') }} €</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Produits</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Produit</th>
+                                        <th>Quantité</th>
+                                        <th>Prix unitaire</th>
+                                        <th>Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for item in produits %}
+                                        <tr>
+                                            <td>{{ item.produit.nom }}</td>
+                                            <td>{{ item.quantite }}</td>
+                                            <td>{{ item.prix_unitaire|number_format(2, ',', ' ') }} €</td>
+                                            <td>{{ item.total|number_format(2, ',', ' ') }} €</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card mb-4">
+                    <div class="card-header bg-light">
+                        <h5 class="mb-0">Paiements</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Mode</th>
+                                        <th>Montant</th>
+                                        <th>Date</th>
+                                        <th>Infos complémentaires</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for paiement in paiements %}
+                                        <tr>
+                                            <td>
+                                                {% if paiement.modePaiement == 'especes' %}
+                                                    <span class="badge bg-primary">Espèces</span>
+                                                {% elseif paiement.modePaiement == 'carte_bleu' %}
+                                                    <span class="badge bg-info">Carte Bancaire</span>
+                                                {% elseif paiement.modePaiement == 'cheque' %}
+                                                    <span class="badge bg-warning">Chèque</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ paiement.montant|number_format(2, ',', ' ') }} €</td>
+                                            <td>{{ paiement.datePaiement|date('d/m/Y H:i') }}</td>
+                                            <td>
+                                                {% if paiement.modePaiement == 'cheque' %}
+                                                    N° chèque: {{ paiement.numeroCheque|default('-') }}
+                                                    {% if paiement.cheque %}
+                                                        <br>État: 
+                                                        {% if paiement.cheque.etat == 'en_attente' %}
+                                                            <span class="badge bg-warning">En attente</span>
+                                                        {% elseif paiement.cheque.etat == 'valide' %}
+                                                            <span class="badge bg-success">Validé</span>
+                                                        {% elseif paiement.cheque.etat == 'refuse' %}
+                                                            <span class="badge bg-danger">Refusé</span>
+                                                        {% endif %}
+                                                    {% endif %}
+                                                {% else %}
+                                                    -
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                
+                {% if ordonnances|length > 0 %}
+                    <div class="card">
+                        <div class="card-header bg-light">
+                            <h5 class="mb-0">Ordonnances</h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-bordered table-hover">
+                                    <thead>
+                                        <tr>
+                                            <th>N° Ordonnance</th>
+                                            <th>N° Ordre</th>
+                                            <th>Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for ordonnance in ordonnances %}
+                                            <tr>
+                                                <td>{{ ordonnance.numeroOrdonnance }}</td>
+                                                <td>{{ ordonnance.numeroDOrdre }}</td>
+                                                <td>
+                                                    <div class="btn-group btn-group-sm">
+                                                        <a href="{{ path('ordonnances_show', {'id': ordonnance.id}) }}" class="btn btn-info">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                        {% if ordonnance.imagePath %}
+                                                            <a href="{{ asset(ordonnance.imagePath) }}" target="_blank" class="btn btn-primary">
+                                                                <i class="fas fa-file-image"></i>
+                                                            </a>
+                                                        {% endif %}
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+{% endblock %}

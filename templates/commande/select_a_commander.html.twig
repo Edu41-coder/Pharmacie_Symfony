@@ -1,0 +1,92 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Sélectionner une liste à commander{% endblock %}
+
+{% block body %}
+{% include 'partials/_breadcrumb_commande.html.twig' with {'current_route': 'commande_select_a_commander'} %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Sélectionner une liste à commander</h1>
+        <a href="{{ path('commande_index') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Retour aux commandes
+        </a>
+    </div>
+    
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Listes à commander disponibles</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID Liste</th>
+                            <th>Date de création</th>
+                            <th>Nombre de produits</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for liste in pagination %}
+                            <tr>
+                                <td>{{ liste.id }}</td>
+                                <td>{{ liste.createdAt|date('d/m/Y H:i') }}</td>
+                                <td>{{ liste.lignes|length }}</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('a_commander_show', {id: liste.id}) }}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Voir le détail">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" 
+                                               class="btn btn-sm btn-success" 
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#createCommandeModal{{ liste.id }}" 
+                                               title="Créer une commande">
+                                            <i class="fas fa-cart-plus"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {# Modal de confirmation de création #}
+                            <div class="modal fade" id="createCommandeModal{{ liste.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirmer la création de commande</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Êtes-vous sûr de vouloir créer une commande à partir de cette liste ?</p>
+                                            <p class="text-center fw-bold">Liste #{{ liste.id }} - {{ liste.lignes|length }} produit(s)</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <a href="{{ path('commande_new_from_a_commander', {id: liste.id}) }}" class="btn btn-success">
+                                                <i class="fas fa-check"></i> Créer la commande
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <tr>
+                                <td colspan="4" class="text-center">Aucune liste à commander disponible</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Pagination #}
+            <div class="d-flex justify-content-center mt-4">
+                {{ knp_pagination_render(pagination, 'pagination/custom_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

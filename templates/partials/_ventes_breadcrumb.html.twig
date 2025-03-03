@@ -1,0 +1,39 @@
+<nav aria-label="breadcrumb" class="bg-light p-2 mb-4 rounded">
+    <ol class="breadcrumb mb-0">
+        <li class="breadcrumb-item">
+            <a href="{{ path('app_dashboard') }}" class="text-decoration-none">
+                <i class="fas fa-home"></i> Accueil
+            </a>
+        </li>
+        {% if current_route not in ['ventes_index'] %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('ventes_index') }}" class="text-decoration-none">
+                    <i class="fas fa-shopping-cart"></i> Ventes
+                </a>
+            </li>
+        {% elseif current_route == 'ventes_index' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-shopping-cart"></i> Ventes
+            </li>
+        {% endif %}
+        
+        {% if current_route == 'ventes_new' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-plus"></i> Nouvelle vente
+            </li>
+        {% elseif current_route == 'ventes_show' %}
+            <li class="breadcrumb-item active">
+                <i class="fas fa-eye"></i> Vente #{{ vente.id }}
+            </li>
+        {% elseif current_route == 'ventes_edit' %}
+            <li class="breadcrumb-item">
+                <a href="{{ path('ventes_show', {id: vente.id}) }}" class="text-decoration-none">
+                    <i class="fas fa-eye"></i> Vente #{{ vente.id }}
+                </a>
+            </li>
+            <li class="breadcrumb-item active">
+                <i class="fas fa-edit"></i> Modifier la vente
+            </li>
+        {% endif %}
+    </ol>
+</nav>

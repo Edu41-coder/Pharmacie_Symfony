@@ -1,0 +1,157 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commandes{% endblock %}
+
+{% block body %} 
+{% include 'partials/_breadcrumb_commande.html.twig' with {'current_route': app.request.attributes.get('_route')} %}
+
+<div class="container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Gestion des commandes</h1>
+    </div>
+
+    {# Bouton de création #}
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Créer une nouvelle commande</h2>
+        </div>
+        <div class="card-body">
+            <div class="row g-3">
+                <div class="col-md-6">
+                    <a href="{{ path('commande_new') }}" class="btn btn-success w-100" title="Créer une commande">
+                        <i class="fas fa-plus"></i> Nouvelle commande
+                    </a>
+                </div>
+                <div class="col-md-6">
+                    <a href="{{ path('commande_select_a_commander') }}" class="btn btn-primary w-100" title="Créer depuis une liste">
+                        <i class="fas fa-file-import"></i> Créer depuis une liste
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {# Liste des commandes existantes #}
+    <div class="card shadow-sm">
+        <div class="card-header">
+            <h2 class="h5 mb-0">Commandes existantes</h2>
+        </div>
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>
+                                <a href="{{ path('commande_index', {'sort': 'c.id', 'direction': sortField == 'c.id' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    #ID 
+                                    {% if sortField == 'c.id' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('commande_index', {'sort': 'c.dateCommande', 'direction': sortField == 'c.dateCommande' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Date
+                                    {% if sortField == 'c.dateCommande' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('commande_index', {'sort': 'c.statut', 'direction': sortField == 'c.statut' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Statut
+                                    {% if sortField == 'c.statut' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>
+                                <a href="{{ path('commande_index', {'sort': 'c.total', 'direction': sortField == 'c.total' and sortOrder == 'asc' ? 'desc' : 'asc'}) }}" class="text-dark text-decoration-none">
+                                    Total
+                                    {% if sortField == 'c.total' %}
+                                        <i class="fas fa-sort-{{ sortOrder == 'asc' ? 'up' : 'down' }}"></i>
+                                    {% else %}
+                                        <i class="fas fa-sort"></i>
+                                    {% endif %}
+                                </a>
+                            </th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for commande in pagination %}
+                            <tr>
+                                <td>{{ commande.id }}</td>
+                                <td>{{ commande.dateCommande|date('d/m/Y H:i') }}</td>
+                                <td>
+                                    <span class="badge {{ commande.statut == 'Livrée' ? 'bg-success' : 
+                                                       commande.statut == 'En cours' ? 'bg-info' : 
+                                                       commande.statut == 'Annulée' ? 'bg-danger' : 'bg-warning' }}">
+                                        {{ commande.statut }}
+                                    </span>
+                                </td>
+                                <td>{{ commande.total|number_format(2, ',', ' ') }} €</td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{{ path('commande_show', {id: commande.id}) }}" 
+                                           class="btn btn-sm btn-outline-info" 
+                                           title="Voir la commande">
+                                            <i class="fas fa-eye"></i>
+                                        </a>
+                                        <button type="button" 
+                                               class="btn btn-sm btn-outline-danger" 
+                                               data-bs-toggle="modal" 
+                                               data-bs-target="#deleteModal{{ commande.id }}" 
+                                               title="Supprimer">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </td>
+                            </tr>
+
+                            {# Modal de confirmation de suppression #}
+                            <div class="modal fade" id="deleteModal{{ commande.id }}" tabindex="-1">
+                                <div class="modal-dialog">
+                                    <div class="modal-content">
+                                        <div class="modal-header">
+                                            <h5 class="modal-title">Confirmer la suppression</h5>
+                                            <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                                        </div>
+                                        <div class="modal-body">
+                                            <p>Êtes-vous sûr de vouloir supprimer cette commande ?</p>
+                                            <p class="text-center fw-bold">Commande #{{ commande.id }} - {{ commande.total|number_format(2, ',', ' ') }} €</p>
+                                            <p class="text-danger text-center">Cette action est irréversible.</p>
+                                        </div>
+                                        <div class="modal-footer">
+                                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                                            <form action="{{ path('commande_delete', {id: commande.id}) }}" method="post" class="d-inline">
+                                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ commande.id) }}">
+                                                <button type="submit" class="btn btn-danger">Supprimer</button>
+                                            </form>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% else %}
+                            <tr>
+                                <td colspan="5" class="text-center">Aucune commande trouvée</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+
+            {# Pagination #}
+            <div class="d-flex justify-content-center mt-4">
+                {{ knp_pagination_render(pagination, 'pagination/custom_pagination.html.twig') }}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
