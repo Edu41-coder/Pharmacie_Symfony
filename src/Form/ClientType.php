@@ -44,7 +44,7 @@ class ClientType extends AbstractType
                 'required' => false,
                 'attr' => ['class' => 'form-control', 'rows' => 3]
             ])
-            ->add('numero_carte_vitale', TextType::class, [
+            ->add('numeroCarteVitale', TextType::class, [  // Corrigé: camelCase
                 'label' => 'Numéro de carte vitale',
                 'required' => false,
                 'attr' => [
@@ -52,7 +52,7 @@ class ClientType extends AbstractType
                     'placeholder' => 'Ex: 1 85 12 34 567 890 21'
                 ]
             ])
-            ->add('cheques_impayes', CheckboxType::class, [
+            ->add('chequesImpayes', CheckboxType::class, [  // Corrigé: camelCase
                 'label' => 'Chèques impayés',
                 'required' => false,
                 'attr' => ['class' => 'form-check-input']
@@ -66,4 +66,4 @@ class ClientType extends AbstractType
             'data_class' => Client::class,
         ]);
     }
-} 
+}

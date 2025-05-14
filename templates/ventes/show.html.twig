@@ -13,13 +13,44 @@
                 <a href="{{ path('ventes_index') }}" class="btn btn-secondary">
                     <i class="fas fa-arrow-left"></i> Retour à la liste
                 </a>
+                <a href="{{ path('factures_show', {'venteId': vente.id}) }}" class="btn btn-info">
+                    <i class="fas fa-file-invoice"></i> Voir facture
+                </a>
                 {% if is_granted('ROLE_ADMIN') %}
                     <a href="{{ path('ventes_edit', {'id': vente.id}) }}" class="btn btn-primary">
                         <i class="fas fa-edit"></i> Modifier
                     </a>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteModal">
+                        <i class="fas fa-trash"></i> Supprimer
+                    </button>
                 {% endif %}
             </div>
         </div>
+
+        <!-- Modal de confirmation pour la suppression -->
+        {% if is_granted('ROLE_ADMIN') %}
+            <div class="modal fade" id="deleteModal" tabindex="-1" aria-labelledby="deleteModalLabel" aria-hidden="true">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="deleteModalLabel">Confirmer la suppression</h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Fermer"></button>
+                        </div>
+                        <div class="modal-body">
+                            <p>Êtes-vous sûr de vouloir supprimer la vente #{{ vente.id }} ?</p>
+                            <p class="text-danger"><strong>Cette action est irréversible.</strong></p>
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Annuler</button>
+                            <form method="post" action="{{ path('ventes_delete', {'id': vente.id}) }}" style="display: inline;">
+                                <input type="hidden" name="_token" value="{{ csrf_token('delete' ~ vente.id) }}">
+                                <button type="submit" class="btn btn-danger">Confirmer la suppression</button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        {% endif %}
 
         <div class="card mb-4">
             <div class="card-header bg-light">

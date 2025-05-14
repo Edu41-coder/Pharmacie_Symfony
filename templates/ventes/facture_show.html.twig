@@ -1,0 +1,177 @@
+{# filepath: e:\Pharmacie\templates\factures\facture_show.html.twig #}
+{% extends 'base.html.twig' %}
+
+{% block title %}Détails de la facture{% endblock %}
+
+{% block body %}
+<div class="container mt-4">
+    <h1 class="mb-4">Facture pour la vente #{{ facture.vente.vente_id }}</h1>
+
+    {% if facture %}
+        <div class="card">
+            <div class="card-header">
+                <h2 class="mb-0">Détails de la facture</h2>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Numéro de facture :</strong> {{ facture._id }}</p>
+                        <p><strong>ID de vente :</strong> {{ facture.vente.vente_id }}</p>
+                        <p><strong>ID client :</strong> {{ facture.vente.client_id }}</p>
+                        <p><strong>Nom du client :</strong> {{ facture.vente.client_nom }}</p>
+                        <p><strong>Prénom du client :</strong> {{ facture.vente.client_prenom }}</p>
+                        <p><strong>Date de vente :</strong> {{ facture.vente.date_vente|default('Non spécifiée') }}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Montant total :</strong> {{ facture.vente.montant_total|number_format(2, ',', ' ') }} €</p>
+                        <p><strong>Montant réglé :</strong> {{ facture.vente.montant_regle|number_format(2, ',', ' ') }} €</p>
+                        <p><strong>Montant à rembourser :</strong> {{ facture.vente.montant_a_rembourser|number_format(2, ',', ' ') }} €</p>
+                    </div>
+                </div>
+
+                <h4 class="mt-4">Produits</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Produit</th>
+                            <th>Quantité</th>
+                            <th>Prix unitaire</th>
+                            <th>Montant total</th>
+                            <th>Montant à rembourser</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for produit in facture.produits %}
+                            <tr>
+                                <td>{{ produit.nom }}</td>
+                                <td>{{ produit.quantite }}</td>
+                                <td>{{ produit.prix_unitaire|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ produit.montant_total|number_format(2, ',', ' ') }} €</td>
+                                <td>{{ produit.montant_a_rembourser|number_format(2, ',', ' ') }} €</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <h4 class="mt-4">Paiements</h4>
+                <table class="table table-striped">
+                    <thead>
+                        <tr>
+                            <th>Mode de paiement</th>
+                            <th>Montant</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for paiement in facture.paiements %}
+                            <tr>
+                                <td>{{ paiement.mode|capitalize }}</td>
+                                <td>{{ paiement.montant|number_format(2, ',', ' ') }} €</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+
+                <p class="mt-3"><strong>Date de création :</strong> {{ facture.createdAt }}</p>
+            </div>
+            <div class="card-footer">
+                <a href="{{ path('ventes_index') }}" class="back-link-gray">
+                    <i class="fas fa-arrow-left"></i> Retour aux ventes
+                </a>
+                <button onclick="printFacture()" class="btn btn-primary float-right">
+                    <i class="fas fa-print"></i> Imprimer Facture
+                </button>
+            </div>
+        </div>
+
+        <script>
+        function printFacture() {
+            var printWindow = window.open('', '_blank');
+            printWindow.document.write(`
+                <html>
+                <head>
+                    <title>Facture - Vente #{{ facture.vente.vente_id }}</title>
+                    <style>
+                        body { font-family: Arial, sans-serif; }
+                        .container { width: 100%; max-width: 800px; margin: 0 auto; }
+                        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                        th { background-color: #f2f2f2; }
+                    </style>
+                </head>
+                <body>
+                    <div class="container">
+                        <h1>Facture pour la vente #{{ facture.vente.vente_id }}</h1>
+                        <div>
+                            <p><strong>Numéro de facture :</strong> {{ facture._id }}</p>
+                            <p><strong>ID de vente :</strong> {{ facture.vente.vente_id }}</p>
+                            <p><strong>ID client :</strong> {{ facture.vente.client_id }}</p>
+                            <p><strong>Nom du client :</strong> {{ facture.vente.client_nom }}</p>
+                            <p><strong>Prénom du client :</strong> {{ facture.vente.client_prenom }}</p>
+                            <p><strong>Date de vente :</strong> {{ facture.vente.date_vente|default('Non spécifiée') }}</p>
+                            <p><strong>Montant total :</strong> {{ facture.vente.montant_total|number_format(2, ',', ' ') }} €</p>
+                            <p><strong>Montant réglé :</strong> {{ facture.vente.montant_regle|number_format(2, ',', ' ') }} €</p>
+                            <p><strong>Montant à rembourser :</strong> {{ facture.vente.montant_a_rembourser|number_format(2, ',', ' ') }} €</p>
+                        </div>
+                        <h4>Produits</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Produit</th>
+                                    <th>Quantité</th>
+                                    <th>Prix unitaire</th>
+                                    <th>Montant total</th>
+                                    <th>Montant à rembourser</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for produit in facture.produits %}
+                                <tr>
+                                    <td>{{ produit.nom }}</td>
+                                    <td>{{ produit.quantite }}</td>
+                                    <td>{{ produit.prix_unitaire|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ produit.montant_total|number_format(2, ',', ' ') }} €</td>
+                                    <td>{{ produit.montant_a_rembourser|number_format(2, ',', ' ') }} €</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <h4>Paiements</h4>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Mode de paiement</th>
+                                    <th>Montant</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for paiement in facture.paiements %}
+                                <tr>
+                                    <td>{{ paiement.mode|capitalize }}</td>
+                                    <td>{{ paiement.montant|number_format(2, ',', ' ') }} €</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                        <p><strong>Date de création :</strong> {{ facture.createdAt }}</p>
+                    </div>
+                </body>
+                </html>
+            `);
+            printWindow.document.close();
+            printWindow.print();
+        }
+        </script>
+
+    {% else %}
+        <div class="alert alert-info">
+            <p>Aucune facture n'existe pour cette vente.</p>
+            <form action="{{ path('factures_create', {'id': venteId}) }}" method="post" class="mt-3">
+                {% if csrf_token is defined %}
+                    <input type="hidden" name="_token" value="{{ csrf_token('create-facture' ~ venteId) }}">
+                {% endif %}
+                <button type="submit" name="creer_facture" class="btn btn-warning">Créer une facture</button>
+            </form>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,4 +1,8 @@
 document.addEventListener('DOMContentLoaded', function() {
+    // Capture le token CSRF dès le début et le stocke dans une variable
+    const csrfToken = document.getElementById('venteForm')?.getAttribute('data-csrf-token') || 
+                     document.querySelector('input[name="_token"]')?.value || '';
+    
     // Désactivation du zoom tactile
     document.addEventListener('touchstart', function(event) {
         if (event.touches.length > 1) event.preventDefault();
@@ -31,7 +35,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const montantAReglerInput = document.createElement('input');
     const modesPaiement = document.querySelectorAll('input[name="mode_encaissement[]"]');
     const montantsPaiement = document.querySelectorAll('.montant-paiement');
-    const clientSelect = document.getElementById('client');
+    const clientSelect = document.getElementById('client-select');
     const venteForm = document.getElementById('venteForm');
 
     // Configuration des inputs cachés
@@ -546,7 +550,7 @@ document.addEventListener('DOMContentLoaded', function() {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('input[name="_token"]').value
+                'X-CSRF-TOKEN': csrfToken
             },
             body: JSON.stringify(formData)
         })

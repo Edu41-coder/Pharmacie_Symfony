@@ -43,16 +43,16 @@ class Client
     #[ORM\Column(type: 'text', nullable: true)]
     private ?string $commentaire = null;
 
-    #[ORM\Column(length: 21, nullable: true)]
+    #[ORM\Column(name: 'numero_carte_vitale', length: 21, nullable: true)]
     #[Assert\Regex(
         pattern: '/^[1-2][\s\d]*\d$/',  // Commence par 1 ou 2, contient des chiffres et espaces
         message: 'Le numéro de carte vitale doit commencer par 1 ou 2'
     )]
     #[Assert\Callback(callback: [Client::class, 'validateNumeroCarteVitale'])]
-    private ?string $numero_carte_vitale = null;
+    private ?string $numeroCarteVitale = null;
 
-    #[ORM\Column]
-    private bool $cheques_impayes = false;
+    #[ORM\Column(name: 'cheques_impayes')]
+    private bool $chequesImpayes = false;
 
     #[ORM\OneToMany(mappedBy: 'client', targetEntity: Cheque::class)]
     private Collection $cheques;
@@ -136,36 +136,36 @@ class Client
 
     public function getNumeroCarteVitale(): ?string
     {
-        return $this->numero_carte_vitale;
+        return $this->numeroCarteVitale;
     }
 
-    public function setNumeroCarteVitale(?string $numero_carte_vitale): self
+    public function setNumeroCarteVitale(?string $numeroCarteVitale): self
     {
-        $this->numero_carte_vitale = $numero_carte_vitale;
+        $this->numeroCarteVitale = $numeroCarteVitale;
         return $this;
     }
 
     public function getChequesImpayes(): bool
     {
-        return $this->cheques_impayes;
+        return $this->chequesImpayes;
     }
 
-    public function setChequesImpayes(bool $cheques_impayes): self
+    public function setChequesImpayes(bool $chequesImpayes): self
     {
-        $this->cheques_impayes = $cheques_impayes;
+        $this->chequesImpayes = $chequesImpayes;
         return $this;
     }
 
-    public static function validateNumeroCarteVitale($numero_carte_vitale, ExecutionContextInterface $context): void
+    public static function validateNumeroCarteVitale($numeroCarteVitale, ExecutionContextInterface $context): void
     {
-        if ($numero_carte_vitale === null) {
+        if ($numeroCarteVitale === null) {
             return;
         }
 
         // Compter uniquement les chiffres
-        $digits = preg_replace('/\D/', '', $numero_carte_vitale);
+        $digits = preg_replace('/\D/', '', $numeroCarteVitale);
         
-        if (strlen($digits) !== 15) {  // Changé de 14 à 15 chiffres
+        if (strlen($digits) !== 15) {  // 15 chiffres pour la carte vitale
             $context->buildViolation('Le numéro de carte vitale doit contenir exactement 15 chiffres')
                    ->addViolation();
         }
@@ -180,8 +180,8 @@ class Client
             'telephone' => $this->telephone,
             'adresse' => $this->adresse,
             'commentaire' => $this->commentaire,
-            'numero_carte_vitale' => $this->numero_carte_vitale,
-            'cheques_impayes' => $this->cheques_impayes,
+            'numero_carte_vitale' => $this->numeroCarteVitale, // Garde la clé en snake_case pour compatibilité
+            'cheques_impayes' => $this->chequesImpayes,       // Garde la clé en snake_case pour compatibilité
         ];
     }
 }

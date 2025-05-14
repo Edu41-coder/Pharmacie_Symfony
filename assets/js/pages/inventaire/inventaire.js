@@ -1,4 +1,4 @@
-import '../../../styles/pages/inventaire.scss';
+//import '../../../styles/pages/inventaire.scss';
 
 // Initialisation de Select2 si nécessaire
 import $ from 'jquery';

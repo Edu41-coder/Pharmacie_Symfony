@@ -29,7 +29,7 @@ window.bootstrap = bootstrap; // Exposer Bootstrap globalement
 import './js/components/flash-messages';
 
 // Import navigation component
-import './js/navigation';
+import './js/components/navigation';
 
 // Initialisation manuelle du modal admin
 document.addEventListener('DOMContentLoaded', function() {

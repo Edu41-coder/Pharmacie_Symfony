@@ -92,6 +92,11 @@ services:
         arguments:
             $projectDir: '%kernel.project_dir%'
 
+    App\Service\FactureService:
+        arguments:
+            $mongoUrl: '%env(MONGODB_URL)%'
+            $databaseName: '%env(MONGODB_DB)%'
+
     form.factory:
         class: Symfony\Component\Form\FormFactory
         arguments: ['@form.registry']

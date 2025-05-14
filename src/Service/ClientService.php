@@ -56,10 +56,16 @@ class ClientService
         if (isset($data['commentaire'])) {
             $client->setCommentaire($data['commentaire']);
         }
-        if (isset($data['numero_carte_vitale'])) {
+        // Pour numeroCarteVitale - accepte les deux formats pour la transition
+        if (isset($data['numeroCarteVitale'])) {
+            $client->setNumeroCarteVitale($data['numeroCarteVitale']);
+        } elseif (isset($data['numero_carte_vitale'])) {
             $client->setNumeroCarteVitale($data['numero_carte_vitale']);
         }
-        if (isset($data['cheques_impayes'])) {
+        // Pour chequesImpayes - accepte les deux formats pour la transition
+        if (isset($data['chequesImpayes'])) {
+            $client->setChequesImpayes($data['chequesImpayes']);
+        } elseif (isset($data['cheques_impayes'])) {
             $client->setChequesImpayes($data['cheques_impayes']);
         }
     }
@@ -115,5 +121,14 @@ class ClientService
     public function getClientById(int $id): ?Client
     {
         return $this->clientRepository->find($id);
+    }
+
+    /**
+     * Persiste un client dans la base de données
+     */
+    public function persistClient(Client $client): void
+    {
+        $this->entityManager->persist($client);
+        $this->entityManager->flush();
     }
 }

@@ -48,10 +48,9 @@ class VenteService
             
             foreach ($data['produits'] as $produitData) {
                 $produit = $this->produitRepository->find($produitData['id']);
-                if (!$produit || $produit->isDeleted()) {
-                    throw new \Exception("Produit invalide");
+                if ($produit->isIsDeleted()) {
+                    throw new \Exception("Le produit {$produit->getNom()} n'est plus disponible.");
                 }
-                
                 $quantite = (int)$produitData['quantite'];
                 if ($quantite <= 0) {
                     throw new \Exception("Quantité invalide");

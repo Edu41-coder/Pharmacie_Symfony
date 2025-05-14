@@ -60,7 +60,7 @@ class InventaireService
             ->where('p.isDeleted = :isDeleted')
             ->andWhere('NOT EXISTS (
                 SELECT 1 FROM App\Entity\Inventaire i 
-                WHERE i.produit_id = p.produit_id
+                WHERE i.produit = p
             )')
             ->setParameter('isDeleted', false)
             ->orderBy('p.nom', 'ASC');

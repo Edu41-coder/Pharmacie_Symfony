@@ -9,11 +9,15 @@
 @import "components/buttons";
 @import "components/forms";
 @import "components/error";
+@import 'components/search_client'; 
 
 // Layouts
 @import "layouts/dashboard";
 
+@import "pages"; // Ceci importera pages/_index.scss automatiquement
+
 // Styles globaux
+
 body {
     background-color: #f8f9fa;
 }
@@ -26,9 +30,6 @@ body {
     }
 }
 
-@import "pages/login";
-@import "pages/dashboard";
-@import "pages/produits";
 
 .disabled {
     color: #6c757d !important;

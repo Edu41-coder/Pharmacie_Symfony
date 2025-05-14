@@ -22,7 +22,7 @@ class Cheque
     #[ORM\Column(name: 'numero_cheque', type: 'string', length: 50, nullable: false)]
     private ?string $numeroCheque = null;
 
-    #[ORM\ManyToOne(targetEntity: Client::class)]
+    #[ORM\ManyToOne(targetEntity: Client::class, inversedBy: 'cheques')]
     #[ORM\JoinColumn(name: 'client_id', referencedColumnName: 'client_id', nullable: false)]
     private ?Client $client = null;
 

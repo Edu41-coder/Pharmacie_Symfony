@@ -11,6 +11,7 @@ use App\Service\ClientService;
 use App\Service\ProduitService;
 use App\Service\InventaireService;
 use App\Service\OrdonnanceService;
+use App\Service\FactureService; // Ajout de cette ligne importante
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -30,7 +31,8 @@ class VenteController extends AbstractController
         private InventaireService $inventaireService,
         private OrdonnanceService $ordonnanceService,
         private EntityManagerInterface $entityManager,
-        private PaginatorInterface $paginator
+        private PaginatorInterface $paginator,
+        private FactureService $factureService // Ajout de cette dépendance
     ) {}
 
     #[Route('/', name: 'ventes_index')]
@@ -76,7 +78,7 @@ class VenteController extends AbstractController
     }
 
     #[Route('/create', name: 'ventes_create', methods: ['POST'])]
-    public function create(Request $request): Response
+    public function create(Request $request): Response // Retirer le paramètre FactureService
     {
         try {
             // Récupération des données du formulaire
@@ -89,6 +91,14 @@ class VenteController extends AbstractController
 
             // Traiter la vente avec le service
             $vente = $this->venteService->processVente($data);
+            
+            // Création facture si demandée
+            if (isset($data['creer_facture']) && $data['creer_facture']) {
+                // Utiliser le service injecté via le constructeur
+                return $this->forward('App\Controller\FactureController::create', [
+                    'id' => $vente->getId()
+                ]);
+            }
             
             return new JsonResponse([
                 'success' => true, 

@@ -5,56 +5,16 @@
 
 {% block stylesheets %}
     {{ parent() }}
-    {# Removing or replacing the non-existent 'ventes' entry point #}
-    {# {{ encore_entry_link_tags('ventes') }} #}
-    
-    {# Use the app entry point which is available #}
     {{ encore_entry_link_tags('app') }}
-    
-    <style>
-        /* Add any custom styles directly here if needed */
-        .client-section, .produits-section {
-            margin-bottom: 2rem;
-        }
-        
-        .product-card {
-            transition: all 0.2s;
-        }
-        
-        .product-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        
-        /* Styles for section headings with icons */
-        h3.section-heading {
-            color: #0d47a1; /* Dark blue color */
-            display: flex;
-            align-items: center;
-            margin-bottom: 1rem;
-            font-weight: 600;
-        }
-        
-        h3.section-heading i {
-            margin-right: 10px;
-            transition: all 0.3s ease;
-        }
-        
-        h3.section-heading:hover i {
-            animation: pulse 1s infinite;
-            transform: scale(1.2);
-        }
-        
-        @keyframes pulse {
-            0% { opacity: 1; }
-            50% { opacity: 0.6; }
-            100% { opacity: 1; }
-        }
-    </style>
 {% endblock %}
 
 {% block body %}
-    <div class="container">
+    <div class="container vente-page">
+        {# Inclusion du breadcrumb #}
+        {% include 'partials/_ventes_breadcrumb.html.twig' with {
+            'current_route': 'ventes_new'
+        } %}
+        
         <h1>Créer une nouvelle vente</h1>
         
         {% for message in app.flashes('error') %}
@@ -65,30 +25,53 @@
             <div class="alert alert-success">{{ message }}</div>
         {% endfor %}
         
-        <form id="venteForm" method="post" action="{{ path('ventes_create') }}" enctype="multipart/form-data">
+        <form id="venteForm" method="post" action="{{ path('ventes_create') }}" 
+              enctype="multipart/form-data" data-csrf-token="{{ csrf_token('vente_form') }}">
             <!-- Section Client -->
             <div class="form-group mb-4">
                 <h3 class="section-heading">
                     <i class="fas fa-user-circle"></i> Client
                 </h3>
-                <label for="client">Liste des clients:</label>
+                <label for="client-select">Liste des clients:</label>
                 <div class="client-search-container">
-                    <select name="client_id" id="client" class="form-control">
-                        <option value="0">Client de passage</option>
-                        {% for client in clients %}
-                            <option 
-                                value="{{ client.id }}" 
-                                data-cheques-impayes="{{ client.chequesImpayes ? 'true' : 'false' }}">
-                                {{ client.nom }} {{ client.prenom }}
-                            </option>
-                        {% endfor %}
-                    </select>
-                    <input type="text"
-                        id="client-search"
-                        class="form-control"
-                        placeholder="Rechercher un client..."
-                        autocomplete="off"
-                        title="Rechercher un client par nom ou prénom">
+                    <div class="input-group mb-2">
+                        <select name="client_id" id="client-select" class="form-control">
+                            <option value="0">Client de passage</option>
+                            {% for client in clients %}
+                                <option 
+                                    value="{{ client.id }}" 
+                                    data-cheques-impayes="{{ client.chequesImpayes ? 'true' : 'false' }}">
+                                    {{ client.nom }} {{ client.prenom }}
+                                </option>
+                            {% endfor %}
+                        </select>
+                        <div class="input-group-append">
+                            <button type="button" id="clear-client" class="btn btn-outline-secondary">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="search-container">
+                        <div class="input-group">
+                            <select id="searchCriteria" class="form-select" style="max-width: 150px;">
+                                <option value="nom">Par nom</option>
+                                <option value="telephone">Par téléphone</option>
+                                <option value="carte_vitale">Par carte vitale</option>
+                            </select>
+                            <input type="text" 
+                                id="searchClient" 
+                                class="form-control" 
+                                placeholder="Rechercher un client (minimum 3 caractères)..."
+                                minlength="3"
+                                autocomplete="off">
+                        </div>
+                        <div id="searchResults" class="search-results d-none">
+                        </div>
+                        <div class="search-feedback text-muted small mt-1 d-none">
+                            Veuillez saisir au moins 3 caractères
+                        </div>
+                    </div>
                 </div>
             </div>
 
@@ -133,17 +116,24 @@
                                 required
                                 title="Entrez la quantité souhaitée">
                         </div>
-                        <div class="col-md-2">
-                            <span class="prix-total"></span>
-                        </div>
-                        <div class="col-md-2">
-                            <span class="montant-a-rembourser"></span>
+                        <div class="col-md-4">
+                            <!-- Remplacer justify-content-between par justify-content-start -->
+                            <div class="d-flex justify-content-start align-items-center">
+                                <div class="me-4">
+                                    <small class="d-block text-muted">Prix total:</small>
+                                    <span class="prix-total font-weight-bold">0.00€</span>
+                                </div>
+                                <div>
+                                    <small class="d-block text-muted">À rembourser:</small>
+                                    <span class="montant-a-rembourser font-weight-bold">0.00€</span>
+                                </div>
+                            </div>
                         </div>
                         <div class="col-md-2">
                             <button type="button"
                                 class="btn btn-outline-danger supprimer-produit"
                                 title="Supprimer ce produit">
-                                <i class="fas fa-trash"></i>
+                                <i class="fas fa-trash text-danger"></i>
                             </button>
                         </div>
                     </div>
@@ -187,15 +177,15 @@
 
             <!-- Section Totaux -->
             <div class="totals-section">
-                <div class="row">
-                    <div class="col-md-4">
-                        <p>Montant total: <span id="montant_total">0.00€</span></p>
+                <div class="d-flex flex-wrap justify-content-between align-items-center">
+                    <div class="montant-item">
+                        <p class="mb-0"><strong>Montant total:</strong> <span id="montant_total" class="montant-value">0.00€</span></p>
                     </div>
-                    <div class="col-md-4">
-                        <p>Montant à rembourser: <span id="montant_a_rembourser">0.00€</span></p>
+                    <div class="montant-item">
+                        <p class="mb-0"><strong>Montant à rembourser:</strong> <span id="montant_a_rembourser" class="montant-value">0.00€</span></p>
                     </div>
-                    <div class="col-md-4">
-                        <p>Montant à régler: <span id="montant_a_regler">0.00€</span></p>
+                    <div class="montant-item">
+                        <p class="mb-0"><strong>Montant à régler:</strong> <span id="montant_a_regler" class="montant-value">0.00€</span></p>
                     </div>
                 </div>
             </div>
@@ -311,71 +301,11 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {# Removing the reference to the non-existent 'ventes' entry point #}
-    {# {{ encore_entry_script_tags('ventes') }} #}
-    
-    {# Use an available entry point instead #}
-    {{ encore_entry_script_tags('app') }}
-    
+    {{ encore_entry_script_tags('ventes') }}
     <script>
-        // Add any custom JavaScript for the ventes page here
-        document.addEventListener('DOMContentLoaded', function() {
-            // Handle product selection
-            const productSelects = document.querySelectorAll('.produit-select');
-            productSelects.forEach(select => {
-                select.addEventListener('change', updatePrices);
-            });
-            
-            // Handle quantity changes
-            const quantityInputs = document.querySelectorAll('.quantite');
-            quantityInputs.forEach(input => {
-                input.addEventListener('change', updatePrices);
-            });
-            
-            // Handle add product button
-            const addProductButton = document.getElementById('ajouter-produit');
-            if (addProductButton) {
-                addProductButton.addEventListener('click', function() {
-                    // Clone the first product row and append it
-                    const firstRow = document.querySelector('.produit-ligne');
-                    const newRow = firstRow.cloneNode(true);
-                    
-                    // Reset values in the new row
-                    newRow.querySelector('.produit-select').selectedIndex = 0;
-                    newRow.querySelector('.quantite').value = 1;
-                    newRow.querySelector('.prix-total').textContent = '';
-                    newRow.querySelector('.montant-a-rembourser').textContent = '';
-                    
-                    // Add event listeners to the new elements
-                    newRow.querySelector('.produit-select').addEventListener('change', updatePrices);
-                    newRow.querySelector('.quantite').addEventListener('change', updatePrices);
-                    newRow.querySelector('.supprimer-produit').addEventListener('click', deleteRow);
-                    
-                    // Append the new row
-                    document.querySelector('.produits-container').appendChild(newRow);
-                });
-            }
-            
-            // Set up delete row functionality
-            const deleteButtons = document.querySelectorAll('.supprimer-produit');
-            deleteButtons.forEach(button => {
-                button.addEventListener('click', deleteRow);
-            });
-            
-            // Functions
-            function updatePrices() {
-                // Implementation would go here
-                console.log('Updating prices');
-            }
-            
-            function deleteRow(event) {
-                // Only delete if there's more than one product row
-                const rows = document.querySelectorAll('.produit-ligne');
-                if (rows.length > 1) {
-                    event.target.closest('.produit-ligne').remove();
-                    updatePrices();
-                }
-            }
-        });
+        // Définir l'URL de recherche pour JavaScript
+        const searchUrl = "{{ path('clients_search') }}";
     </script>
+    <script src="{{ asset('js/clients/search.js') }}"></script>
+    <script src="{{ asset('js/clients/client-selector.js') }}"></script>
 {% endblock %}

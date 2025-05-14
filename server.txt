@@ -86,3 +86,46 @@ http://localhost:8000/dashboard
  
  password123
 
+
+cuando copia desde github
+git clone https://github.com/Edu41-coder/Pharmacie_Symfony .
+
+copiar var 
+
+composer clear-cache
+rm -r vendor
+composer install
+
+npm install
+
+copier ficheros env
+
+
+commandes symfony
+symfony serve
+symfony server:stop --all
+symfony server:status
+
+
+
+
+
+
+GitHub
+
+
+# Se placer dans le répertoire du projet
+cd /c:/xampp/htdocs/Pharmacie
+
+# Vérifier l'état des fichiers
+git status
+
+# Ajouter tous les fichiers modifiés
+git add .
+
+# Créer un commit avec un message descriptif
+git commit -m "Ajout des fonctionnalités de vente et corrections d'affichage"
+
+# Pousser les modifications vers GitHub
+git push origin dev
+
