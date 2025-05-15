@@ -38,23 +38,35 @@ class VenteController extends AbstractController
     #[Route('/', name: 'ventes_index')]
     public function index(Request $request): Response
     {
-        $sortField = $request->query->get('sort', 'date');
-        $sortOrder = $request->query->get('direction', 'DESC');
+        // Récupérer les paramètres de tri avec préfixe d'alias si nécessaire
+        $sort = $request->query->get('sort', 'date');
+        $direction = $request->query->get('direction', 'DESC');
+        
+        // Ajouter l'alias v. aux champs qui n'en ont pas déjà
+        $sortField = str_contains($sort, '.') ? $sort : 'v.' . $sort;
+        
         $dateDebut = $request->query->get('date_debut');
         $dateFin = $request->query->get('date_fin');
         
-        $query = $this->venteService->createSortedQueryBuilder($sortField, $sortOrder, $dateDebut, $dateFin);
+        $query = $this->venteService->createSortedQueryBuilder($sortField, $direction, $dateDebut, $dateFin);
         
         $pagination = $this->paginator->paginate(
             $query,
             $request->query->getInt('page', 1),
-            15
+             15,
+            [
+                'defaultSortFieldName' => 'v.date',
+                'defaultSortDirection' => 'DESC',
+                'sortFieldWhitelist' => ['v.id', 'v.date', 'v.montant', 'v.montantRegle', 'v.aRembourser', 'client.nom']
+            ]
         );
 
         return $this->render('ventes/index.html.twig', [
             'pagination' => $pagination,
             'dateDebut' => $dateDebut,
-            'dateFin' => $dateFin
+            'dateFin' => $dateFin,
+            'currentSort' => $sort,
+            'currentDirection' => $direction
         ]);
     }
 
@@ -115,7 +127,7 @@ class VenteController extends AbstractController
     {
         $produits = $this->venteService->getProduitsVente($vente);
         $paiements = $this->venteService->getPaiementsVente($vente);
-        $ordonnances = $vente->getOrdonnances();
+        $ordonnances = $this->ordonnanceService->getOrdonnancesForVente($vente);
         
         return $this->render('ventes/show.html.twig', [
             'vente' => $vente,
@@ -126,20 +138,33 @@ class VenteController extends AbstractController
     }
 
     #[Route('/{id}/edit', name: 'ventes_edit', methods: ['GET', 'POST'])]
-    #[IsGranted('ROLE_ADMIN')]
     public function edit(Request $request, Vente $vente): Response
     {
+        // Évitez complètement le problème - créez un formulaire sans accéder aux ordonnances
         $form = $this->createForm(VenteType::class, $vente);
+        
+        // Récupérer manuellement les données pour la vue
+        $produits = $this->venteService->getProduitsVente($vente);
+        $paiements = $this->venteService->getPaiementsVente($vente);
+        $ordonnances = $this->ordonnanceService->getOrdonnancesForVente($vente);
+        
         $form->handleRequest($request);
         
         if ($form->isSubmitted() && $form->isValid()) {
-            $this->entityManager->flush();
-            $this->addFlash('success', 'Vente mise à jour');
-            return $this->redirectToRoute('ventes_show', ['id' => $vente->getId()]);
+            try {
+                $this->entityManager->flush();
+                $this->addFlash('success', 'Vente modifiée avec succès');
+                return $this->redirectToRoute('ventes_show', ['id' => $vente->getId()]);
+            } catch (\Exception $e) {
+                $this->addFlash('error', 'Erreur lors de la modification de la vente: ' . $e->getMessage());
+            }
         }
         
         return $this->render('ventes/edit.html.twig', [
             'vente' => $vente,
+            'produits' => $produits,
+            'paiements' => $paiements,
+            'ordonnances' => $ordonnances,
             'form' => $form->createView()
         ]);
     }

@@ -13,13 +13,11 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class TvaController extends AbstractController
 {
-    private $tvaService;
-    private $entityManager;
-
-    public function __construct(TvaService $tvaService, EntityManagerInterface $entityManager)
-    {
-        $this->tvaService = $tvaService;
-        $this->entityManager = $entityManager;
+    public function __construct(
+        private TvaService $tvaService,
+        private EntityManagerInterface $entityManager
+    ) {
+        // Constructeur vide - tout est géré par la property promotion
     }
 
     #[Route('/tva', name: 'tva_show', methods: ['GET'])]

@@ -22,40 +22,9 @@ import '@fortawesome/fontawesome-free/css/all.min.css';
 import * as bootstrap from 'bootstrap';
 window.bootstrap = bootstrap; // Exposer Bootstrap globalement
 
-// Start the Stimulus application - COMMENTÉ TEMPORAIREMENT
-// import './bootstrap';  
-
 // Import flash messages component
 import './js/components/flash-messages';
 
 // Import navigation component
 import './js/components/navigation';
 
-// Initialisation manuelle du modal admin
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOM loaded, initializing admin modal...');
-    
-    // Sélectionner le bouton et le modal
-    const adminButton = document.getElementById('adminButton');
-    const adminModal = document.getElementById('adminModal');
-    
-    if (adminButton && adminModal) {
-        console.log('Admin button and modal found, adding click handler');
-        adminButton.addEventListener('click', function() {
-            console.log('Admin button clicked, showing modal');
-            try {
-                const bsModal = new bootstrap.Modal(adminModal);
-                bsModal.show();
-            } catch (error) {
-                console.error('Error showing modal:', error);
-                // Fallback en cas d'erreur
-                adminModal.classList.add('show');
-                adminModal.style.display = 'block';
-            }
-        });
-    } else {
-        console.log('Admin button or modal not found');
-        console.log('adminButton:', adminButton);
-        console.log('adminModal:', adminModal);
-    }
-});

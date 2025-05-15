@@ -22,7 +22,7 @@ class Ordonnance
     #[ORM\Column(name: 'image_path', type: 'string', length: 255, nullable: true)]
     private ?string $imagePath = null;
 
-    #[ORM\Column(name: 'numero_d\'ordre', type: 'string', length: 255, nullable: false)]
+    #[ORM\Column(name: "numero_dordre", type: 'string', length: 255, nullable: false)]
     private ?string $numeroDOrdre = null;
 
     #[ORM\ManyToMany(targetEntity: Produit::class)]

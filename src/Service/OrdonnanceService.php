@@ -4,6 +4,7 @@ namespace App\Service;
 
 use App\Entity\Ordonnance;
 use App\Entity\Produit;
+use App\Entity\Vente;
 use App\Repository\OrdonnanceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
@@ -79,5 +80,30 @@ class OrdonnanceService
     public function findOrdonnancesNonAssociees(): array
     {
         return $this->ordonnanceRepository->findOrdonnancesNonAssociees();
+    }
+
+    /**
+     * Récupère les ordonnances liées à une vente spécifique
+     */
+    public function getOrdonnancesForVente(Vente $vente): array
+    {
+        try {
+            // Utiliser une requête DQL personnalisée pour éviter le problème de mapping
+            $qb = $this->entityManager->createQueryBuilder()
+                ->select('o')
+                ->from('App\Entity\Ordonnance', 'o')
+                ->innerJoin('App\Entity\VenteOrdonnance', 'vo', 'WITH', 'vo.ordonnance = o')
+                ->where('vo.vente = :vente')
+                ->setParameter('vente', $vente);
+
+            return $qb->getQuery()->getResult();
+        } catch (\Exception $e) {
+            // Log l'erreur pour debug
+            // Si vous avez un logger configuré, vous pouvez l'utiliser ici
+            // $this->logger->error('Erreur lors de la récupération des ordonnances: ' . $e->getMessage());
+            
+            // Retourner un tableau vide en cas d'erreur
+            return [];
+        }
     }
 }

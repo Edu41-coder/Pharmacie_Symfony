@@ -21,21 +21,13 @@ use Symfony\Component\Routing\Annotation\Route;
 #[Route('/commande')]
 class CommandeController extends AbstractController
 {
-    private $commandeService;
-    private $entityManager;
-    private $commandeRepository;
-    private $aCommanderService;
-
     public function __construct(
-        CommandeService $commandeService, 
-        EntityManagerInterface $entityManager,
-        CommandeRepository $commandeRepository,
-        ACommanderService $aCommanderService
+        private CommandeService $commandeService,
+        private EntityManagerInterface $entityManager,
+        private CommandeRepository $commandeRepository,
+        private ACommanderService $aCommanderService
     ) {
-        $this->commandeService = $commandeService;
-        $this->entityManager = $entityManager;
-        $this->commandeRepository = $commandeRepository;
-        $this->aCommanderService = $aCommanderService;
+        // Constructeur vide - tout est géré par la property promotion
     }
 
     #[Route('/', name: 'commande_index', methods: ['GET'])]

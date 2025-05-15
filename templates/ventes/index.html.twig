@@ -68,12 +68,66 @@
                     <table class="table table-hover" id="ventes-table">
                         <thead>
                             <tr>
-                                <th data-sort="vente_id">ID</th>
-                                <th data-sort="client">Client</th>
-                                <th data-sort="date">Date</th>
-                                <th data-sort="montant">Montant</th>
-                                <th data-sort="montant_regle">Montant réglé</th>
-                                <th data-sort="a_rembourser">À rembourser</th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'id', 'direction': currentSort == 'id' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        ID
+                                        {% if currentSort == 'id' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'client.nom', 'direction': currentSort == 'client.nom' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        Client
+                                        {% if currentSort == 'client.nom' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'date', 'direction': currentSort == 'date' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        Date
+                                        {% if currentSort == 'date' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'montant', 'direction': currentSort == 'montant' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        Montant
+                                        {% if currentSort == 'montant' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'montantRegle', 'direction': currentSort == 'montantRegle' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        Montant réglé
+                                        {% if currentSort == 'montantRegle' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
+                                <th>
+                                    <a href="{{ path('ventes_index', {'sort': 'aRembourser', 'direction': currentSort == 'aRembourser' and currentDirection == 'asc' ? 'desc' : 'asc', 'date_debut': dateDebut, 'date_fin': dateFin}) }}" class="text-dark text-decoration-none">
+                                        À rembourser
+                                        {% if currentSort == 'aRembourser' %}
+                                            <i class="fas fa-sort-{{ currentDirection == 'asc' ? 'up' : 'down' }}"></i>
+                                        {% else %}
+                                            <i class="fas fa-sort"></i>
+                                        {% endif %}
+                                    </a>
+                                </th>
                                 <th>Mode de paiement</th>
                                 <th>Actions</th>
                             </tr>
@@ -173,45 +227,23 @@
     {{ parent() }}
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            const table = document.getElementById('ventes-table');
-            const headers = table.querySelectorAll('th[data-sort]');
+            // Ajouter les classes pour les styles de tri (optionnel)
+            const currentSort = "{{ currentSort|e('js') }}";
+            const currentDirection = "{{ currentDirection|e('js') }}";
             
-            // Récupérer les paramètres de tri actuels de l'URL
-            const urlParams = new URLSearchParams(window.location.search);
-            const currentSort = urlParams.get('sort') || 'date';
-            const currentDirection = urlParams.get('direction') || 'desc';
-            
-            // Appliquer les classes de tri aux en-têtes
+            // Trouver l'en-tête actuellement triée et appliquer la classe
+            const headers = document.querySelectorAll('th a');
             headers.forEach(header => {
-                const sortColumn = header.dataset.sort;
-                if (sortColumn === currentSort) {
-                    header.classList.add(`th-sort-${currentDirection}`);
+                const url = new URL(header.href);
+                const sortParam = url.searchParams.get('sort');
+                
+                if (sortParam === currentSort) {
+                    if (currentDirection === 'asc') {
+                        header.parentElement.classList.add('th-sort-asc');
+                    } else {
+                        header.parentElement.classList.add('th-sort-desc');
+                    }
                 }
-            });
-            
-            // Ajouter les écouteurs d'événements pour le tri
-            headers.forEach(header => {
-                header.addEventListener('click', function() {
-                    const sortColumn = this.dataset.sort;
-                    let newDirection = 'asc';
-                    
-                    if (sortColumn === currentSort) {
-                        newDirection = currentDirection === 'asc' ? 'desc' : 'asc';
-                    }
-                    
-                    // Construire la nouvelle URL avec tous les paramètres existants
-                    const newUrlParams = new URLSearchParams(window.location.search);
-                    newUrlParams.set('sort', sortColumn);
-                    newUrlParams.set('direction', newDirection);
-                    
-                    // Conserver la page actuelle et les autres filtres
-                    if (!newUrlParams.has('page')) {
-                        newUrlParams.set('page', '1');
-                    }
-                    
-                    // Redirection avec la nouvelle URL
-                    window.location.href = `${window.location.pathname}?${newUrlParams.toString()}`;
-                });
             });
         });
     </script>

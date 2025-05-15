@@ -14,9 +14,17 @@ use Symfony\Component\Form\Extension\Core\Type\TextareaType;
 use Symfony\Component\Form\Extension\Core\Type\CollectionType;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\Extension\Core\Type\HiddenType;
+use Doctrine\ORM\EntityManagerInterface;
 
 class VenteType extends AbstractType
 {
+    private EntityManagerInterface $entityManager;
+    
+    public function __construct(EntityManagerInterface $entityManager)
+    {
+        $this->entityManager = $entityManager;
+    }
+    
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
@@ -45,7 +53,8 @@ class VenteType extends AbstractType
                     'class' => 'form-control',
                     'readonly' => true
                 ],
-                'label' => 'Montant total'
+                'label' => 'Montant total',
+                'mapped' => true
             ])
             ->add('montantRegle', MoneyType::class, [
                 'currency' => 'EUR',
@@ -54,7 +63,8 @@ class VenteType extends AbstractType
                     'class' => 'form-control',
                     'readonly' => true
                 ],
-                'label' => 'Montant réglé'
+                'label' => 'Montant réglé',
+                'mapped' => true
             ])
             ->add('aRembourser', MoneyType::class, [
                 'currency' => 'EUR',
@@ -63,7 +73,8 @@ class VenteType extends AbstractType
                     'class' => 'form-control',
                     'readonly' => true
                 ],
-                'label' => 'Montant à rembourser'
+                'label' => 'Montant à rembourser',
+                'mapped' => true
             ])
             ->add('commentaire', TextareaType::class, [
                 'required' => false,
@@ -89,19 +100,20 @@ class VenteType extends AbstractType
                 'by_reference' => false,
                 'label' => false
             ])
-            ->add('ordonnances', EntityType::class, [
-                'class' => Ordonnance::class,
-                'choice_label' => function (Ordonnance $ordonnance) {
-                    return $ordonnance->getNumeroOrdonnance() . ' - ' . $ordonnance->getNumeroDOrdre();
-                },
-                'multiple' => true,
-                'expanded' => false,
-                'required' => false,
-                'attr' => [
-                    'class' => 'form-select ordonnance-select'
-                ],
-                'label' => 'Ordonnances'
-            ])
+            // Nous avons simplement commenté ce champ pour éviter les problèmes
+            // ->add('ordonnances', EntityType::class, [
+            //     'class' => Ordonnance::class,
+            //     'choice_label' => function (Ordonnance $ordonnance) {
+            //         return $ordonnance->getNumeroOrdonnance() . ' - ' . $ordonnance->getNumeroDOrdre();
+            //     },
+            //     'multiple' => true,
+            //     'expanded' => false,
+            //     'required' => false,
+            //     'attr' => [
+            //         'class' => 'form-select ordonnance-select'
+            //     ],
+            //     'label' => 'Ordonnances'
+            // ])
             ->add('isDeleted', HiddenType::class, [
                 'data' => '0'
             ]);

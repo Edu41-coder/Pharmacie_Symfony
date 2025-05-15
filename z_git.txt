@@ -1,0 +1,15 @@
+
+
+# Ajouter tous les fichiers (sauf ceux exclus par .gitignore)
+git add .
+
+# Effectuer un commit initial
+git commit -m "Initial commit pour la branche dev_1"
+
+
+
+# Créer et basculer sur la nouvelle branche dev_1
+git checkout -b dev_2
+
+# Pousser la branche dev_1 vers GitHub
+git push -u origin dev_2

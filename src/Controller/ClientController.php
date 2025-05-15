@@ -18,18 +18,14 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 #[Route('/clients')]
 class ClientController extends AbstractController
 {
-    private $entityManager;
-    private $clientRepository;
-
     public function __construct(
-        EntityManagerInterface $entityManager,
-        ClientRepository $clientRepository,
+        private EntityManagerInterface $entityManager,
+        private ClientRepository $clientRepository,
         private ClientService $clientService,
         private FormFactoryInterface $formFactory,
         private PaginatorInterface $paginator
     ) {
-        $this->entityManager = $entityManager;
-        $this->clientRepository = $clientRepository;
+        // Constructeur vide - tout est géré par la property promotion
     }
 
     #[Route('/', name: 'client_index', methods: ['GET'])]

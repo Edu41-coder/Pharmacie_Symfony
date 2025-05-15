@@ -154,11 +154,25 @@ document.addEventListener('DOMContentLoaded', function() {
             event.stopPropagation();
             event.stopImmediatePropagation();
         }
+        
+        // Vérifier si toutes les lignes existantes ont un produit sélectionné
+        const produitsNonSelectionnes = Array.from(document.querySelectorAll('.produit-ligne')).some(ligne => {
+            const select = ligne.querySelector('.produit-select');
+            return !select.value; // Retourne true si la valeur est vide
+        });
+        
+        // Si on trouve un produit non sélectionné, on empêche l'ajout d'une nouvelle ligne
+        if (produitsNonSelectionnes) {
+            alert('Veuillez sélectionner un produit dans la ligne existante avant d\'en ajouter une nouvelle.');
+            return false;
+        }
+        
+        // Si tous les produits sont sélectionnés, on peut ajouter une nouvelle ligne
         const produitsContainer = document.querySelector('.produits-container');
         const nouvelleLigne = produitsContainer.querySelector('.produit-ligne').cloneNode(true);
 
         // Réinitialiser les valeurs
-        nouvelleLigne.querySelectorAll('input').forEach(input => {
+        nouvelleLigne.querySelectorAll('input').forEach(function(input) {
             if (input.classList.contains('produit-search')) {
                 input.value = '';
             } else if (input.closest('.ordonnance-fields')) {
@@ -222,7 +236,8 @@ document.addEventListener('DOMContentLoaded', function() {
                             
                             resultItem.addEventListener('click', () => {
                                 select.value = option.value;
-                                searchInput.value = option.textContent;
+                                searchInput.value = ''; // Réinitialiser le champ de recherche (au lieu de mettre le texte du produit)
+                                searchInput.placeholder = 'Rechercher un produit...'; // S'assurer que le placeholder est correct
                                 resultsContainer.style.display = 'none';
                                 
                                 // Déclencher l'événement change sur le select

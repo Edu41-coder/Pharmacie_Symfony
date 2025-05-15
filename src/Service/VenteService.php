@@ -212,14 +212,16 @@ class VenteService
         $this->venteRepository->softDelete($vente);
     }
     
-    public function createSortedQueryBuilder(
-        string $sortField = 'date', 
-        string $sortOrder = 'DESC',
-        ?string $dateDebut = null,
-        ?string $dateFin = null
-    ): QueryBuilder {
-        $qb = $this->venteRepository->createSortedQueryBuilder($sortField, $sortOrder);
+    public function createSortedQueryBuilder(?string $sortField = 'v.date', ?string $sortOrder = 'DESC', ?string $dateDebut = null, ?string $dateFin = null): QueryBuilder
+    {
+        $qb = $this->entityManager->createQueryBuilder()
+            ->select('v')
+            ->from('App\Entity\Vente', 'v')
+            ->leftJoin('v.client', 'client')
+            ->where('v.isDeleted = :isDeleted')
+            ->setParameter('isDeleted', false);
         
+        // Filtrer par date si demandé
         if ($dateDebut) {
             $qb->andWhere('v.date >= :dateDebut')
                ->setParameter('dateDebut', new \DateTime($dateDebut . ' 00:00:00'));
@@ -228,6 +230,27 @@ class VenteService
         if ($dateFin) {
             $qb->andWhere('v.date <= :dateFin')
                ->setParameter('dateFin', new \DateTime($dateFin . ' 23:59:59'));
+        }
+        
+        // Assurer des alias corrects pour le tri
+        switch ($sortField) {
+            case 'v.id':
+            case 'v.montant':
+            case 'v.montantRegle':
+            case 'v.aRembourser':
+            case 'v.date':
+                // Ces champs sont déjà correctement préfixés
+                $qb->orderBy($sortField, $sortOrder);
+                break;
+                
+            case 'client.nom':
+                $qb->orderBy('client.nom', $sortOrder)
+                   ->addOrderBy('client.prenom', $sortOrder);
+                break;
+                
+            // Cas par défaut pour assurer la compatibilité
+            default:
+                $qb->orderBy('v.date', 'DESC');
         }
         
         return $qb;

@@ -1,0 +1,80 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Modifier la vente{% endblock %}
+
+{% block body %}
+    <div class="container">
+        <div class="row mb-4">
+            <div class="col-12">
+                <h1>Modifier la vente #{{ vente.id }}</h1>
+            </div>
+        </div>
+
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex flex-wrap gap-2">
+                    <a href="{{ path('ventes_show', {'id': vente.id}) }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i>
+                        Retour aux détails
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-body">
+                {{ form_start(form) }}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form_row(form.client) }}
+                        </div>
+                        <div class="col-md-6">
+                            {{ form_row(form.date) }}
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            {{ form_row(form.commentaire) }}
+                        </div>
+                    </div>
+
+                    {% if form.venteProduits is defined %}
+                    <h3 class="mt-4">Produits</h3>
+                    <div class="venteProduits-wrapper" 
+                         data-prototype="{{ form_widget(form.venteProduits.vars.prototype)|e('html_attr') }}">
+                        {% for venteProduitForm in form.venteProduits %}
+                            <div class="venteProduit-item mb-3 p-3 border rounded">
+                                <div class="row">
+                                    <div class="col-md-4">
+                                        {{ form_row(venteProduitForm.produit) }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form_row(venteProduitForm.quantite) }}
+                                    </div>
+                                    <div class="col-md-4">
+                                        {{ form_row(venteProduitForm.prixVente) }}
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+
+                    <div class="text-center mt-4">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save"></i> Enregistrer les modifications
+                        </button>
+                    </div>
+                {{ form_end(form) }}
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        // Script pour gérer l'ajout dynamique de produits si nécessaire
+    </script>
+{% endblock %}

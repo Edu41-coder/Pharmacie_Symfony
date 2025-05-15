@@ -7,12 +7,11 @@ use Doctrine\ORM\EntityManagerInterface;
 
 class TvaService
 {
-    private $entityManager;
     private const DEFAULT_TVA_RATE = 20.0;
 
-    public function __construct(EntityManagerInterface $entityManager)
-    {
-        $this->entityManager = $entityManager;
+    public function __construct(
+        private EntityManagerInterface $entityManager
+    ) {
     }
 
     /**
