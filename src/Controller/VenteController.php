@@ -36,27 +36,35 @@ class VenteController extends AbstractController
     ) {}
 
     #[Route('/', name: 'ventes_index')]
-    public function index(Request $request): Response
+    public function index(Request $request, PaginatorInterface $paginator): Response
     {
-        // Récupérer les paramètres de tri avec préfixe d'alias si nécessaire
         $sort = $request->query->get('sort', 'date');
         $direction = $request->query->get('direction', 'DESC');
-        
-        // Ajouter l'alias v. aux champs qui n'en ont pas déjà
-        $sortField = str_contains($sort, '.') ? $sort : 'v.' . $sort;
-        
         $dateDebut = $request->query->get('date_debut');
         $dateFin = $request->query->get('date_fin');
-        
-        $query = $this->venteService->createSortedQueryBuilder($sortField, $direction, $dateDebut, $dateFin);
-        
-        $pagination = $this->paginator->paginate(
-            $query,
+
+        $sortByPaiement = ($sort === 'paiement');
+        if ($sortByPaiement) {
+            $sortField = 'v.date';
+            $manualSortByPaiement = true;
+        } else {
+            $sortField = \str_contains($sort, '.') ? $sort : 'v.' . $sort;
+            $manualSortByPaiement = false;
+        }
+
+        $queryBuilder = $this->venteService->createSortedQueryBuilder(
+            $sortField,
+            $direction,
+            $dateDebut,
+            $dateFin            
+        );
+
+        $pagination = $paginator->paginate(
+            $queryBuilder,
             $request->query->getInt('page', 1),
-             15,
+            5,
             [
-                'defaultSortFieldName' => 'v.date',
-                'defaultSortDirection' => 'DESC',
+                'wrap-queries' => true,                
                 'sortFieldWhitelist' => ['v.id', 'v.date', 'v.montant', 'v.montantRegle', 'v.aRembourser', 'client.nom']
             ]
         );
@@ -65,8 +73,9 @@ class VenteController extends AbstractController
             'pagination' => $pagination,
             'dateDebut' => $dateDebut,
             'dateFin' => $dateFin,
+            // Important: on transmet toujours le paramètre original pour l'affichage des icônes
             'currentSort' => $sort,
-            'currentDirection' => $direction
+            'currentDirection' => $direction,
         ]);
     }
 
@@ -75,13 +84,13 @@ class VenteController extends AbstractController
     {
         $clientRepository = $this->entityManager->getRepository(Client::class);
         $produitRepository = $this->entityManager->getRepository(Produit::class);
-        
+
         $clients = $clientRepository->findAll();
         $produits = $produitRepository->findAll();
 
         // Add the TVA value
         $tva = 20; // Default TVA rate (update this with your actual TVA rate)
-        
+
         return $this->render('ventes/new.html.twig', [
             'clients' => $clients,
             'produits' => $produits,
@@ -90,27 +99,77 @@ class VenteController extends AbstractController
     }
 
     #[Route('/create', name: 'ventes_create', methods: ['POST'])]
-    public function create(Request $request): Response // Retirer le paramètre FactureService
+    public function create(Request $request): Response
     {
         try {
-            // Récupération des données du formulaire
-            $data = json_decode($request->getContent(), true);
+            // Détecter le format des données envoyées
+            $contentType = $request->headers->get('Content-Type');
             
-            // Vérification des données essentielles
-            if (!isset($data['produits']) || empty($data['produits'])) {
-                return new JsonResponse(['error' => 'Aucun produit sélectionné'], 400);
+            // Si c'est du JSON, récupérer depuis le contenu
+            if (str_contains($contentType, 'application/json')) {
+                $data = json_decode($request->getContent(), true);
+                if (!$data) {
+                    throw new \Exception("JSON invalide");
+                }
+            } else {
+                // Sinon, récupérer depuis request->request (form data)
+                $data = $request->request->all();
+                
+                // Si les produits sont envoyés en JSON, les décoder
+                if (isset($data['produits']) && is_string($data['produits'])) {
+                    $data['produits'] = json_decode($data['produits'], true);
+                }
+                if (isset($data['paiements']) && is_string($data['paiements'])) {
+                    $data['paiements'] = json_decode($data['paiements'], true);
+                }
+            }
+            
+            // Vérifier que les produits existent
+            if (!isset($data['produits']) || !is_array($data['produits'])) {
+                throw new \Exception("Aucun produit n'a été fourni");
             }
 
-            // Traiter la vente avec le service
-            $vente = $this->venteService->processVente($data);
-            
-            // Création facture si demandée
-            if (isset($data['creer_facture']) && $data['creer_facture']) {
-                // Utiliser le service injecté via le constructeur
-                return $this->forward('App\Controller\FactureController::create', [
-                    'id' => $vente->getId()
-                ]);
+            // Créer le répertoire si nécessaire
+            $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads';
+            if (!is_dir($uploadDir)) {
+                mkdir($uploadDir, 0777, true);
             }
+
+            // Traiter les fichiers uniquement si le format est multipart/form-data
+            if (!str_contains($contentType, 'application/json')) {
+                $uploadedFiles = $request->files->get('image_ordonnance', []);
+                error_log('UPLOAD DEBUG: Nombre de fichiers reçus : ' . count($uploadedFiles));
+                
+                foreach ($uploadedFiles as $fileKey => $file) {
+                    if ($file) {
+                        error_log("UPLOAD DEBUG: Traitement du fichier à l'index {$fileKey}");
+                        
+                        try {
+                            // Créer un nom unique pour le fichier
+                            $uniqueName = uniqid('ordo_') . '.' . $file->guessExtension();
+                            
+                            // Déplacer le fichier
+                            $file->move($uploadDir, $uniqueName);
+                            $imagePath = 'uploads/' . $uniqueName;
+                            
+                            error_log("UPLOAD DEBUG: Fichier déplacé vers {$imagePath}");
+                            
+                            // Trouver et mettre à jour le produit correspondant
+                            if (isset($data['produits'][$fileKey]) && 
+                                isset($data['produits'][$fileKey]['ordonnance'])) {
+                                
+                                // Injecter directement le chemin de l'image
+                                $data['produits'][$fileKey]['ordonnance']['image_path'] = $imagePath;
+                                error_log("UPLOAD DEBUG: Image_path injecté dans produit[$fileKey]");
+                            }
+                        } catch (\Exception $e) {
+                            error_log("UPLOAD ERROR: " . $e->getMessage());
+                        }
+                    }
+                }
+            }
+            
+            $vente = $this->venteService->processVente($data);
             
             return new JsonResponse([
                 'success' => true, 
@@ -118,6 +177,7 @@ class VenteController extends AbstractController
                 'vente_id' => $vente->getId()
             ], 200);
         } catch (\Exception $e) {
+            error_log("Erreur : " . $e->getMessage() . "\n" . $e->getTraceAsString());
             return new JsonResponse(['error' => $e->getMessage()], 500);
         }
     }
@@ -128,7 +188,7 @@ class VenteController extends AbstractController
         $produits = $this->venteService->getProduitsVente($vente);
         $paiements = $this->venteService->getPaiementsVente($vente);
         $ordonnances = $this->ordonnanceService->getOrdonnancesForVente($vente);
-        
+
         return $this->render('ventes/show.html.twig', [
             'vente' => $vente,
             'produits' => $produits,
@@ -142,14 +202,14 @@ class VenteController extends AbstractController
     {
         // Évitez complètement le problème - créez un formulaire sans accéder aux ordonnances
         $form = $this->createForm(VenteType::class, $vente);
-        
+
         // Récupérer manuellement les données pour la vue
         $produits = $this->venteService->getProduitsVente($vente);
         $paiements = $this->venteService->getPaiementsVente($vente);
         $ordonnances = $this->ordonnanceService->getOrdonnancesForVente($vente);
-        
+
         $form->handleRequest($request);
-        
+
         if ($form->isSubmitted() && $form->isValid()) {
             try {
                 $this->entityManager->flush();
@@ -159,7 +219,7 @@ class VenteController extends AbstractController
                 $this->addFlash('error', 'Erreur lors de la modification de la vente: ' . $e->getMessage());
             }
         }
-        
+
         return $this->render('ventes/edit.html.twig', [
             'vente' => $vente,
             'produits' => $produits,
@@ -173,11 +233,11 @@ class VenteController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function delete(Request $request, Vente $vente): Response
     {
-        if ($this->isCsrfTokenValid('delete'.$vente->getId(), $request->request->get('_token'))) {
+        if ($this->isCsrfTokenValid('delete' . $vente->getId(), $request->request->get('_token'))) {
             $this->venteService->deleteVente($vente);
             $this->addFlash('success', 'Vente supprimée');
         }
-        
+
         return $this->redirectToRoute('ventes_index');
     }
 
@@ -186,7 +246,7 @@ class VenteController extends AbstractController
     {
         $term = $request->query->get('term');
         $clients = $this->clientService->searchByTerm($term);
-        
+
         $result = [];
         foreach ($clients as $client) {
             $result[] = [
@@ -196,7 +256,7 @@ class VenteController extends AbstractController
                 'prenom' => $client->getPrenom()
             ];
         }
-        
+
         return new JsonResponse(['results' => $result]);
     }
 
@@ -205,12 +265,12 @@ class VenteController extends AbstractController
     {
         $term = $request->query->get('term');
         $produits = $this->produitService->searchByTerm($term);
-        
+
         $result = [];
         foreach ($produits as $produit) {
             $inventaire = $this->inventaireService->findByProduit($produit);
             $stock = $inventaire ? $inventaire->getStock() : 0;
-            
+
             $result[] = [
                 'id' => $produit->getId(),
                 'text' => $produit->getNom(),
@@ -221,21 +281,21 @@ class VenteController extends AbstractController
                 'stock' => $stock
             ];
         }
-        
+
         return new JsonResponse(['results' => $result]);
     }
-    
+
     #[Route('/statistiques', name: 'ventes_statistiques')]
     #[IsGranted('ROLE_ADMIN')]
     public function statistiques(Request $request): Response
     {
         $dateDebut = $request->query->get('date_debut');
         $dateFin = $request->query->get('date_fin');
-        
+
         $statistiques = $this->venteService->getStatistiquesVentes($dateDebut, $dateFin);
         $totalVentes = $this->venteService->getMontantTotalVentes($dateDebut, $dateFin);
         $totalRemboursements = $this->venteService->getMontantTotalRemboursements($dateDebut, $dateFin);
-        
+
         return $this->render('ventes/statistiques.html.twig', [
             'statistiques' => $statistiques,
             'totalVentes' => $totalVentes,

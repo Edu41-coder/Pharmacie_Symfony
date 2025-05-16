@@ -495,9 +495,19 @@ document.addEventListener('DOMContentLoaded', function() {
             return false;
         }
         
-        // Préparation des données pour la soumission
+        // Utiliser FormData au lieu de JSON pour pouvoir envoyer des fichiers
+        const formData = new FormData();
+        
+        // Ajouter les données du client et autres métadonnées
+        formData.append('client_id', clientSelect.value);
+        formData.append('montant_total', montantTotalInput.value);
+        formData.append('montant_a_regler', montantAReglerInput.value);
+        formData.append('commentaire', document.getElementById('commentaire').value.trim());
+        formData.append('creer_facture', document.getElementById('creer_facture').checked ? 1 : 0);
+        
+        // Collecter les données de produits
         const produitsData = [];
-        document.querySelectorAll('.produit-ligne').forEach(ligne => {
+        document.querySelectorAll('.produit-ligne').forEach((ligne, index) => {
             const select = ligne.querySelector('.produit-select');
             if (select.value) {
                 const produitId = select.value;
@@ -506,27 +516,28 @@ document.addEventListener('DOMContentLoaded', function() {
                 const ordonnanceData = {};
                 if (select.options[select.selectedIndex].dataset.prescription === 'oui') {
                     const ordonnanceFields = ligne.querySelector('.ordonnance-fields');
-                    ordonnanceData.numero = ordonnanceFields.querySelector('input[name="numero_ordonnance[]"]').value;
-                    ordonnanceData.numero_ordre = ordonnanceFields.querySelector('input[name="numero_ordre[]"]').value;
+                    const numero = ordonnanceFields.querySelector('input[name="numero_ordonnance[]"]').value;
+                    const numeroOrdre = ordonnanceFields.querySelector('input[name="numero_ordre[]"]').value;
                     
-                    // Gestion de l'image d'ordonnance (sera traitée côté serveur)
+                    // Ajouter les métadonnées d'ordonnance
+                    formData.append(`produits[${index}][ordonnance][numero]`, numero);
+                    formData.append(`produits[${index}][ordonnance][numero_ordre]`, numeroOrdre);
+                    
+                    // Ajouter le fichier d'image directement dans le FormData
                     const imageInput = ordonnanceFields.querySelector('input[type="file"]');
                     if (imageInput.files.length > 0) {
-                        ordonnanceData.image = true;
+                        formData.append(`image_ordonnance[${index}]`, imageInput.files[0]);
                     }
                 }
                 
-                produitsData.push({
-                    id: produitId,
-                    quantite: quantite,
-                    ordonnance: Object.keys(ordonnanceData).length > 0 ? ordonnanceData : null
-                });
+                // Ajouter les données de base du produit
+                formData.append(`produits[${index}][id]`, produitId);
+                formData.append(`produits[${index}][quantite]`, quantite);
             }
         });
         
-        // Collecte des données de paiement
-        const paiementsData = [];
-        modesPaiement.forEach((checkbox) => {
+        // Ajouter les données de paiement
+        modesPaiement.forEach((checkbox, index) => {
             if (checkbox.checked) {
                 const modePaiement = checkbox.value;
                 let montant = 0;
@@ -541,33 +552,21 @@ document.addEventListener('DOMContentLoaded', function() {
                     numeroCheque = document.querySelector('input[name="numero_cheque"]').value.trim();
                 }
                 
-                paiementsData.push({
-                    mode: modePaiement,
-                    montant: montant,
-                    numero_cheque: numeroCheque
-                });
+                formData.append(`paiements[${index}][mode]`, modePaiement);
+                formData.append(`paiements[${index}][montant]`, montant);
+                if (numeroCheque) {
+                    formData.append(`paiements[${index}][numero_cheque]`, numeroCheque);
+                }
             }
         });
         
-        // Construction des données finales
-        const formData = {
-            client_id: clientSelect.value,
-            produits: produitsData,
-            paiements: paiementsData,
-            montant_total: parseFloat(montantTotalInput.value),
-            montant_a_regler: parseFloat(montantAReglerInput.value),
-            commentaire: document.getElementById('commentaire').value.trim(),
-            creer_facture: document.getElementById('creer_facture').checked ? 1 : 0,
-        };
-        
-        // Envoi des données au serveur
+        // Envoi des données au serveur en utilisant FormData (multipart/form-data)
         fetch(venteForm.action, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json',
                 'X-CSRF-TOKEN': csrfToken
             },
-            body: JSON.stringify(formData)
+            body: formData // Pas besoin de JSON.stringify avec FormData
         })
         .then(response => response.json())
         .then(data => {

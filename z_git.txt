@@ -4,12 +4,12 @@
 git add .
 
 # Effectuer un commit initial
-git commit -m "Initial commit pour la branche dev_1"
+git commit -m "correction ventes"
 
 
 
 # Créer et basculer sur la nouvelle branche dev_1
-git checkout -b dev_2
+git checkout -b dev_3
 
 # Pousser la branche dev_1 vers GitHub
-git push -u origin dev_2
+git push -u origin dev_3

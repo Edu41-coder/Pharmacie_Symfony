@@ -1,9 +1,9 @@
 <?php return array(
     'root' => array(
         'name' => '__root__',
-        'pretty_version' => 'dev-dev',
-        'version' => 'dev-dev',
-        'reference' => '20e8cd68438744dc47b1776fa13d62dd26bff4c3',
+        'pretty_version' => 'dev-dev_2',
+        'version' => 'dev-dev_2',
+        'reference' => 'cd048868e6e94265fd814ad9c324e941771aaf22',
         'type' => 'project',
         'install_path' => __DIR__ . '/../../',
         'aliases' => array(),
@@ -11,11 +11,20 @@
     ),
     'versions' => array(
         '__root__' => array(
-            'pretty_version' => 'dev-dev',
-            'version' => 'dev-dev',
-            'reference' => '20e8cd68438744dc47b1776fa13d62dd26bff4c3',
+            'pretty_version' => 'dev-dev_2',
+            'version' => 'dev-dev_2',
+            'reference' => 'cd048868e6e94265fd814ad9c324e941771aaf22',
             'type' => 'project',
             'install_path' => __DIR__ . '/../../',
+            'aliases' => array(),
+            'dev_requirement' => false,
+        ),
+        'beberlei/doctrineextensions' => array(
+            'pretty_version' => 'v1.5.0',
+            'version' => '1.5.0.0',
+            'reference' => '281f1650641c2f438b0a54d8eaa7ba50ac7e3eb6',
+            'type' => 'library',
+            'install_path' => __DIR__ . '/../beberlei/doctrineextensions',
             'aliases' => array(),
             'dev_requirement' => false,
         ),
